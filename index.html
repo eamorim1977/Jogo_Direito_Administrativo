@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B7A75">
+<style>html{color-scheme:light dark}body{margin:0}</style>
+</head>
+<body>
+<title>Mesa de Estudo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Conceito: trilha de moedas por tópico sobre papel frio, cartas de estudo com autoavaliação,
+   desafios com vidas e feedback em painel inferior, como no Duolingo. */
+:root{
+  --bg:#EDF0F3; --surface:#FFFFFF; --surface-2:#E1E7ED; --ink:#13233A; --ink-2:#4B5B71; --line:#C9D2DC;
+  --accent:#0B7A75; --accent-deep:#06534F; --accent-ink:#FFFFFF; --accent-tint:#D8EEEC;
+  --test:#3B4E7A; --test-deep:#243457; --on-test:#FFFFFF;
+  --gold:#E2A400; --gold-deep:#A87900; --gold-ink:#2E2200; --gold-tint:#FBEFC9;
+  --ok:#1B8548; --ok-deep:#12602F; --ok-bg:#DCF3E4; --on-ok:#FFFFFF;
+  --bad:#CF3F35; --bad-deep:#9C2B24; --bad-bg:#FBE0DD; --on-bad:#FFFFFF;
+  --flame:#E8641C; --locked:#C3CCD6; --locked-deep:#A5B0BC;
+  --f-display:'Bricolage Grotesque','Avenir Next','Segoe UI',system-ui,sans-serif;
+  --f-body:'Figtree','Segoe UI',system-ui,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1626; --surface:#16233A; --surface-2:#1E2E49; --ink:#E7EEF7; --ink-2:#9FB1C8; --line:#2A3B58;
+    --accent:#34C4BA; --accent-deep:#1B8A83; --accent-ink:#04201E; --accent-tint:#123B3B;
+    --test:#8AA2D6; --test-deep:#52689C; --on-test:#0B1426;
+    --gold:#F3BE2F; --gold-deep:#A57D0C; --gold-ink:#2E2200; --gold-tint:#3B3012;
+    --ok:#4FD08A; --ok-deep:#2A8F57; --ok-bg:#12331F; --on-ok:#06210F;
+    --bad:#FF7B70; --bad-deep:#B94A42; --bad-bg:#3B1B1A; --on-bad:#2B0A08;
+    --flame:#FF8A4C; --locked:#2A3B58; --locked-deep:#1E2E49;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1626; --surface:#16233A; --surface-2:#1E2E49; --ink:#E7EEF7; --ink-2:#9FB1C8; --line:#2A3B58;
+  --accent:#34C4BA; --accent-deep:#1B8A83; --accent-ink:#04201E; --accent-tint:#123B3B;
+  --test:#8AA2D6; --test-deep:#52689C; --on-test:#0B1426;
+  --gold:#F3BE2F; --gold-deep:#A57D0C; --gold-ink:#2E2200; --gold-tint:#3B3012;
+  --ok:#4FD08A; --ok-deep:#2A8F57; --ok-bg:#12331F; --on-ok:#06210F;
+  --bad:#FF7B70; --bad-deep:#B94A42; --bad-bg:#3B1B1A; --on-bad:#2B0A08;
+  --flame:#FF8A4C; --locked:#2A3B58; --locked-deep:#1E2E49;
+  color-scheme:dark;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+button,.opt,.tile,.node,label{touch-action:manipulation; -webkit-user-select:none; user-select:none}
+html{-webkit-text-size-adjust:100%; overscroll-behavior-y:none}
+@media (max-width:480px){
+  .hero h1{font-size:24px} .qtext{font-size:22px} .btn{min-height:56px}
+  .opt{padding:16px} .tile{padding:14px 12px; min-height:56px}
+  .ring{width:84px; height:84px}
+}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:16px; line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0; min-height:100%;
+}
+body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); background:var(--bg); z-index:10}
+.wrap{max-width:640px; margin:0 auto; padding-bottom:48px}
+button{font:inherit; color:inherit}
+:focus-visible{outline:3px solid var(--accent); outline-offset:3px; border-radius:8px}
+h1,h2,h3{font-family:var(--f-display); margin:0; text-wrap:balance; line-height:1.15}
+p{margin:0}
+.mono{font-family:var(--f-mono); font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-2)}
+svg.i{width:1em; height:1em; fill:currentColor; flex:none}
+svg.i.s{fill:none; stroke:currentColor; stroke-width:3; stroke-linecap:round; stroke-linejoin:round}
+
+.bar{position:sticky; top:env(safe-area-inset-top,0px); z-index:5; background:var(--bg); display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 0}
+.brand{display:flex; align-items:center; gap:10px; font:800 20px var(--f-display); letter-spacing:-.01em}
+.mark{width:26px; height:26px; border-radius:50%; background:conic-gradient(var(--gold) 0 25%, var(--gold-deep) 0 50%, var(--gold) 0 75%, var(--gold-deep) 0); box-shadow:inset 0 0 0 5px var(--gold)}
+.chips{display:flex; gap:14px}
+.chip{display:inline-flex; align-items:center; gap:6px; font:700 16px var(--f-mono)}
+.chip svg{font-size:20px}
+.c-flame{color:var(--flame)} .c-xp{color:var(--gold)} .c-heart{color:var(--bad)}
+
+.card{background:var(--surface); border:2px solid var(--line); border-radius:20px; padding:18px}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:52px; padding:0 22px; border:0; border-radius:16px; background:var(--accent); color:var(--accent-ink); box-shadow:0 4px 0 var(--accent-deep); font:800 15px var(--f-body); letter-spacing:.05em; text-transform:uppercase; cursor:pointer; width:100%}
+.btn:active:not(:disabled){transform:translateY(3px); box-shadow:0 1px 0 var(--accent-deep)}
+.btn:disabled{background:var(--locked); color:var(--ink-2); box-shadow:0 4px 0 var(--locked-deep); cursor:not-allowed}
+.btn.ghost{background:transparent; color:var(--accent); box-shadow:none; border:2px solid var(--line)}
+.btn.small{min-height:40px; width:auto; font-size:13px; padding:0 16px}
+.btn.no{background:var(--bad); color:var(--on-bad); box-shadow:0 4px 0 var(--bad-deep)}
+.btn.yes{background:var(--ok); color:var(--on-ok); box-shadow:0 4px 0 var(--ok-deep)}
+.dock.ok .btn{background:var(--ok); color:var(--on-ok); box-shadow:0 4px 0 var(--ok-deep)}
+.dock.bad .btn{background:var(--bad); color:var(--on-bad); box-shadow:0 4px 0 var(--bad-deep)}
+
+.hero{display:grid; grid-template-columns:1fr auto; gap:16px; align-items:center}
+.eyebrow{font:700 12px var(--f-mono); letter-spacing:.12em; text-transform:uppercase; color:var(--ink-2)}
+.hero h1{font-size:28px; margin:4px 0 12px}
+.xpbar{height:12px; border-radius:99px; background:var(--surface-2); overflow:hidden}
+.xpbar i{display:block; height:100%; background:var(--gold); border-radius:99px; transition:width .5s}
+.hero .mono{font-size:13px; margin-top:6px}
+.ring{position:relative; width:96px; height:96px; display:grid; place-items:center; text-align:center}
+.ring svg{position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg)}
+.ring .tr{stroke:var(--surface-2)} .ring .fg{stroke:var(--accent); transition:stroke-dashoffset .6s}
+.ring b{font:700 16px var(--f-mono); display:block; line-height:1.1}
+.ring small{font-size:11px; color:var(--ink-2); display:block; line-height:1.2}
+.review{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; flex-wrap:wrap}
+.review > div:first-child{flex:1; min-width:180px}
+.review h3{font-size:17px}
+.review p{font-size:14px; color:var(--ink-2)}
+.rbtns{display:flex; gap:8px; flex-wrap:wrap}
+.sec{display:flex; align-items:baseline; justify-content:space-between; margin:30px 0 8px}
+.sec h2{font-size:20px}
+
+/* unidades */
+.unit{margin-top:26px}
+.uhead{display:flex; gap:14px; align-items:center}
+.unum{width:44px; height:44px; border-radius:14px; background:var(--surface-2); display:grid; place-items:center; font:800 22px var(--f-display); flex:none}
+.uhead h3{font-size:20px}
+.uhead p{font-size:13px; color:var(--ink-2)}
+.umeta{display:flex; align-items:center; gap:10px; margin:12px 0 4px; font:700 12px var(--f-mono); color:var(--ink-2); letter-spacing:.04em}
+.umeta .xpbar{flex:1; height:8px}
+.umeta .xpbar i{background:var(--accent)}
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(84px,1fr)); gap:18px 10px; padding:14px 0 6px}
+.cell{display:flex; flex-direction:column; align-items:center; gap:8px; min-width:0}
+.cell span.l{font-size:12px; font-weight:600; color:var(--ink-2); text-align:center; line-height:1.2}
+.node{position:relative; width:68px; height:68px; border-radius:50%; border:0; background:var(--accent); color:var(--accent-ink); box-shadow:inset 0 0 0 5px rgba(255,255,255,.2), 0 5px 0 var(--accent-deep); display:grid; place-items:center; cursor:pointer; font:800 26px var(--f-display)}
+.node svg{font-size:28px}
+.node:active{transform:translateY(3px); box-shadow:inset 0 0 0 5px rgba(255,255,255,.2), 0 2px 0 var(--accent-deep)}
+.node.test{background:var(--test); color:var(--on-test); box-shadow:inset 0 0 0 5px rgba(255,255,255,.2), 0 5px 0 var(--test-deep)}
+.node.boss{width:84px; height:84px; background:var(--test); color:var(--on-test); box-shadow:inset 0 0 0 6px rgba(255,255,255,.2), 0 6px 0 var(--test-deep)}
+.node.boss svg{font-size:36px}
+.node.done{background:var(--gold); color:var(--gold-ink); box-shadow:inset 0 0 0 5px rgba(255,255,255,.28), 0 5px 0 var(--gold-deep)}
+.node.next{animation:pulse 1.8s ease-out infinite}
+@keyframes pulse{0%{outline:0 solid var(--accent); outline-offset:0}70%{outline:10px solid transparent; outline-offset:0}100%{outline:0 solid transparent}}
+.node.next{outline:3px solid var(--accent); outline-offset:4px}
+.stars{display:flex; gap:2px; color:var(--gold); font-size:13px; justify-content:center; min-height:13px}
+.stars .off{color:var(--locked)}
+
+.badges{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px}
+.badge{display:flex; gap:12px; align-items:center; padding:12px; min-width:0}
+.badge .coin{width:38px; height:38px; border-radius:50%; background:var(--locked); display:grid; place-items:center; color:var(--ink-2); flex:none; box-shadow:inset 0 0 0 4px rgba(255,255,255,.15)}
+.badge.on .coin{background:var(--gold); color:var(--gold-ink)}
+.badge b{display:block; font:700 14px/1.2 var(--f-body)}
+.badge span{font-size:12px; color:var(--ink-2); line-height:1.25; display:block}
+.badge:not(.on){opacity:.7}
+.foot{margin-top:30px; font-size:13px; color:var(--ink-2); display:flex; flex-direction:column; gap:10px}
+.foot .btn{align-self:flex-start}
+
+/* lição */
+.ltop{display:flex; align-items:center; gap:14px; padding:16px 0 8px; position:sticky; top:env(safe-area-inset-top,0px); background:var(--bg); z-index:5}
+.x{border:0; background:transparent; color:var(--ink-2); font-size:26px; padding:4px; cursor:pointer; display:grid}
+.progress{flex:1; height:14px; border-radius:99px; background:var(--surface-2); overflow:hidden}
+.progress i{display:block; height:100%; background:var(--accent); border-radius:99px; transition:width .35s}
+.lesson{padding-bottom:220px}
+.kind{font:700 12px var(--f-mono); letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin:22px 0 8px}
+.qtext{font-size:24px; margin-bottom:22px}
+.flash .qtext{margin-bottom:18px}
+.opts{display:flex; flex-direction:column; gap:12px}
+.opt{display:flex; gap:14px; align-items:center; width:100%; text-align:left; padding:14px 16px; border:2px solid var(--line); border-bottom-width:4px; border-radius:16px; background:var(--surface); color:var(--ink); font:600 16px/1.35 var(--f-body); cursor:pointer; min-width:0}
+.opt kbd{font:700 13px var(--f-mono); width:28px; height:28px; border:2px solid var(--line); border-radius:8px; display:grid; place-items:center; color:var(--ink-2); flex:none}
+.opt span{min-width:0; overflow-wrap:anywhere}
+.opt.sel{border-color:var(--accent); background:var(--accent-tint)}
+.opt.right{border-color:var(--ok); background:var(--ok-bg)}
+.opt.wrong{border-color:var(--bad); background:var(--bad-bg); animation:shake .3s}
+.opt.dim{opacity:.55}
+.opt:disabled{cursor:default}
+.pairs{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.pairs .col{display:flex; flex-direction:column; gap:10px; min-width:0}
+.tile{padding:12px; border:2px solid var(--line); border-bottom-width:4px; border-radius:14px; background:var(--surface); color:var(--ink); font:600 14px/1.3 var(--f-body); text-align:left; cursor:pointer; min-width:0; overflow-wrap:anywhere}
+.tile.sel{border-color:var(--accent); background:var(--accent-tint)}
+.tile.ok{border-color:var(--ok); background:var(--ok-bg); opacity:.6; cursor:default}
+.tile.bad{border-color:var(--bad); background:var(--bad-bg); animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.hint{font-size:14px; color:var(--ink-2); margin-top:14px}
+.ans{margin-top:4px; padding:16px; border:2px solid var(--line); border-radius:16px; background:var(--surface); font-size:16px; line-height:1.55; overflow-wrap:anywhere}
+.trap{margin-top:12px; padding:14px 16px; border:2px solid var(--gold); border-radius:16px; background:var(--gold-tint)}
+.trap b{display:block; font:700 11px var(--f-mono); letter-spacing:.1em; text-transform:uppercase; color:var(--ink-2); margin-bottom:2px}
+.dock{position:fixed; left:0; right:0; bottom:0; z-index:6; background:var(--surface); border-top:2px solid var(--line); padding:14px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.dock.ok{background:var(--ok-bg); border-color:var(--ok)} .dock.bad{background:var(--bad-bg); border-color:var(--bad)}
+.dock-in{max-width:640px; margin:0 auto; display:flex; flex-direction:column; gap:10px}
+.dock-row{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.fb strong{display:block; font:800 20px var(--f-display)}
+.dock.ok .fb strong{color:var(--ok)} .dock.bad .fb strong{color:var(--bad)}
+.fb p{font-size:15px; margin-top:2px}
+
+.center{text-align:center; display:flex; flex-direction:column; align-items:center; gap:18px; padding:48px 0 24px}
+.center h1{font-size:34px}
+.stats{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:100%}
+.stat{padding:12px 8px; border:2px solid var(--line); border-radius:16px; background:var(--surface)}
+.stat b{display:block; font:700 24px var(--f-mono)}
+.stat span{font:700 11px var(--f-mono); letter-spacing:.1em; text-transform:uppercase; color:var(--ink-2)}
+.bigstars{display:flex; gap:6px; font-size:44px; color:var(--gold)} .bigstars .off{color:var(--locked)}
+.scene{font-size:17px}
+
+textarea{width:100%; min-height:220px; resize:vertical; padding:14px; border:2px solid var(--line); border-radius:16px; background:var(--surface); color:var(--ink); font:400 16px/1.5 var(--f-body)}
+textarea:focus{border-color:var(--accent); outline:none}
+.wc{font:700 12px var(--f-mono); color:var(--ink-2); margin:6px 0 16px; text-align:right}
+.chk{display:flex; flex-direction:column; gap:10px; margin:14px 0 20px}
+.chk label{display:flex; gap:12px; align-items:flex-start; padding:12px 14px; border:2px solid var(--line); border-radius:14px; background:var(--surface); cursor:pointer; font-size:15px}
+.chk input{width:22px; height:22px; margin-top:1px; accent-color:var(--accent); flex:none}
+.chk label:has(input:checked){border-color:var(--ok); background:var(--ok-bg)}
+
+.toast{position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom,0px)); transform:translate(-50%,20px); background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:14px; font:600 14px var(--f-body); opacity:0; pointer-events:none; transition:.25s; z-index:20; max-width:calc(100% - 32px); text-align:center}
+.toast.on{opacity:1; transform:translate(-50%,0)}
+@media (prefers-reduced-motion: reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="bar" id="bar"></header>
+  <main id="view"></main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ============ CONTEÚDO ============ */
+const UNITS=[
+ {n:1,title:'Princípios e organização',sub:'Regime jurídico, LIMPE, órgãos e descentralização'},
+ {n:2,title:'Administração Indireta',sub:'Autarquias, estatais, fundações e agências'},
+ {n:3,title:'Poderes administrativos',sub:'Hierárquico, disciplinar, regulamentar e de polícia'},
+ {n:4,title:'Atos administrativos',sub:'Elementos, atributos, vícios e extinção'},
+ {n:5,title:'Serviços públicos',sub:'Concessão, permissão, autorização e PPP'},
+ {n:6,title:'Agentes públicos I',sub:'Ingresso, concurso e cargos em comissão'},
+ {n:7,title:'Agentes públicos II',sub:'Remuneração, acumulação e estabilidade'},
+ {n:8,title:'Lei 8.112/1990',sub:'Provimento, vacância, remoção e redistribuição'}
+];
+// Cartas geradas dos seus 8 resumos (pergunta, resposta e armadilha da banca).
+const CARDS={"5": [{"id": "5-1", "q": "A quem pertence a titularidade do serviço público e como pode ser prestado (art. 175)?", "a": "Sempre ao Estado. Prestação direta (Administração Direta ou Indireta) ou indireta (delegação a particulares por concessão, permissão ou autorização). Na prestação indireta, transfere-se só a execução; o Estado mantém a titularidade e o dever de regulamentar e fiscalizar.", "t": "Dizer que a delegação transfere a titularidade."}, {"id": "5-2", "q": "Quais são as escolas do conceito de serviço público e qual o Brasil adota?", "a": "Essencialista (materialista): importância crucial para a população. Subjetivista: pelo sujeito que presta (não adotada, pois particulares prestam por delegação). Formalista (legalista): é a adotada; serviço público é a atividade que o ordenamento determina prestar sob regime de direito público.", "t": "Atribuir ao Brasil a escola subjetivista."}, {"id": "5-3", "q": "Qual o conceito de serviço público de Celso Antônio Bandeira de Mello?", "a": "Atividade de oferecimento de utilidade ou comodidade fruível singularmente pelos administrados, assumida pelo Estado sob regime de direito público para satisfazer a coletividade.", "t": "Esquecer a fruição singular ou o regime de direito público."}, {"id": "5-4", "q": "Quais os princípios do serviço público (Celso Antônio), parte 1?", "a": "Dever inescusável do Estado; supremacia do interesse público; adaptabilidade (atualidade): modernização constante; universalidade (generalidade): maior amplitude de usuários; impessoalidade: proibição de discriminação entre usuários.", "t": "Trocar adaptabilidade por universalidade."}, {"id": "5-5", "q": "Quais os princípios do serviço público (Celso Antônio), parte 2?", "a": "Continuidade; transparência (liberar o máximo de informações); motivação (fundamentar as decisões); modicidade das tarifas (valores acessíveis); controle (fiscalização permanente pelo poder concedente, MP e Tribunais de Contas).", "t": "Esquecer o controle como princípio."}, {"id": "5-6", "q": "Em quais casos o serviço pode ser interrompido sem ferir a continuidade?", "a": "Emergência; razões de ordem técnica ou segurança (com aviso prévio); inadimplência do usuário (com aviso prévio e considerado o interesse coletivo).", "t": "Admitir interrupção sem aviso prévio fora da emergência."}, {"id": "5-7", "q": "Diferencie serviços gerais (uti universi) e singulares (uti singuli).", "a": "Gerais: à coletividade indistintamente, uso não mensurável individualmente (iluminação pública, segurança nacional); não remunerados por taxa. Singulares: uso mensurável por usuário (energia, água); remunerados por taxa ou tarifa.", "t": "Cobrar taxa por serviço geral."}, {"id": "5-8", "q": "Diferencie serviços delegáveis e indelegáveis.", "a": "Indelegáveis: próprios do Estado (poder de polícia, defesa nacional, Judiciário). Delegáveis: podem ser prestados pela iniciativa privada por concessão, permissão ou autorização (transporte público, telefonia).", "t": "Delegar o poder de polícia."}, {"id": "5-9", "q": "Diferencie serviços próprios e impróprios.", "a": "Próprios: sob regime de direito público, comodidade direta à população. Impróprios: serviços sociais que a iniciativa privada presta sem delegação formal, regidos pelo direito privado (hospitais e escolas particulares). Outra vertente define impróprios como os que não afetam substancialmente as necessidades da comunidade e são delegáveis.", "t": "Aplicar direito público aos impróprios."}, {"id": "5-10", "q": "O que é concessão e quais seus subtipos?", "a": "Delegação formalizada por contrato administrativo, para serviços que exigem investimentos vultosos. Subtipos: concessão comum (tarifa do usuário); concessão de obra pública (investimento recuperado pela exploração do serviço ou da obra, ex.: rodovia com pedágio); PPPs: patrocinada (tarifa + subsídio estatal) e administrativa (o Estado é o usuário e paga o prestador).", "t": "Dizer que a PPP administrativa é paga por tarifa do usuário."}, {"id": "5-11", "q": "Quais as regras da concessão quanto a licitação, sujeitos, prazo e natureza?", "a": "Licitação: concorrência ou diálogo competitivo (exceção: leilão para transferência de controle acionário; possível inexigibilidade se a disputa for inviável). Sujeitos: só pessoa jurídica ou consórcio. Prazo: sempre determinado. Natureza: contrato administrativo bilateral, sem precariedade.", "t": "Admitir pessoa física como concessionária."}, {"id": "5-12", "q": "Como é a permissão de serviço público?", "a": "Delegação para serviços de porte médio, por contrato de adesão; a lei a define como precária e revogável unilateralmente. Sempre exige licitação, sem modalidade específica. Pode ser outorgada a pessoa física ou jurídica. Prazo, em regra, determinado.", "t": "Dispensar licitação na permissão."}, {"id": "5-13", "q": "Como é a autorização de serviço público?", "a": "Ato administrativo unilateral, em regra discricionário e precário (sem indenização), fundamentado diretamente na CF (ex.: telecomunicações, radiodifusão). Não exige licitação nem lei autorizativa prévia; pode ter prazo indeterminado. Exceção: em telecomunicações é ato vinculado.", "t": "Exigir licitação para a autorização."}, {"id": "5-14", "q": "Compare concessão, permissão e autorização.", "a": "Formalização: contrato administrativo, contrato de adesão e ato administrativo. Licitação: obrigatória (concorrência/diálogo), obrigatória (qualquer modalidade) e não exige. Natureza: bilateral não precária, bilateral precária e unilateral precária. Pessoa física: não, sim, sim. Prazo: sempre determinado, geralmente determinado, pode ser indeterminado. Lei autorizativa: exige, exige, não exige.", "t": "Misturar as colunas de permissão e autorização."}, {"id": "5-15", "q": "Quando é dispensada a lei autorizativa para concessão e permissão?", "a": "Regra: lei autorizativa específica. Exceções: saneamento básico, limpeza urbana e serviços previstos para delegação na CF, nas constituições estaduais e nas leis orgânicas.", "t": "Exigir lei específica sem exceções."}, {"id": "5-16", "q": "Quais os critérios de julgamento e peculiaridades da licitação de concessão?", "a": "Menor valor da tarifa, maior oferta pela outorga, melhor proposta técnica ou combinação; preferência por empresas brasileiras. O edital pode prever a inversão das fases de habilitação e julgamento. O contrato pode prever arbitragem.", "t": "Vedar a arbitragem ou a inversão de fases."}, {"id": "5-17", "q": "O que é serviço público adequado?", "a": "O que satisfaz regularidade, continuidade, eficiência, segurança, atualidade, generalidade, cortesia e modicidade das tarifas.", "t": "Omitir cortesia ou atualidade."}, {"id": "5-18", "q": "Como funciona a intervenção na concessão?", "a": "O poder concedente assume temporariamente o serviço por decreto (com interventor, prazo, objetivos e limites). Deve instaurar processo administrativo em 30 dias e concluí-lo em até 180 dias, sob pena de invalidade. A indenização continua possível.", "t": "Trocar os prazos de 30 e 180 dias."}, {"id": "5-19", "q": "Quais as formas de extinção da concessão?", "a": "Advento do termo; encampação; caducidade; rescisão; anulação; falência ou falecimento. Extinta, os bens necessários à continuidade revertem ao patrimônio do poder público (reversão).", "t": "Esquecer a reversão dos bens."}, {"id": "5-20", "q": "Diferencie encampação, caducidade e rescisão.", "a": "Encampação: retomada por interesse público, com lei autorizativa específica e indenização prévia. Caducidade: inexecução total ou parcial por culpa da concessionária (ou transferência sem anuência prévia). Rescisão: iniciativa da concessionária por inadimplência do Estado, obrigatoriamente por ação judicial.", "t": "Fazer a concessionária rescindir sem ação judicial."}, {"id": "5-21", "q": "Como se mantém o equilíbrio econômico-financeiro e a modicidade nas tarifas?", "a": "Modicidade: tarifas acessíveis, para permitir acesso universal. Equilíbrio: o valor deve cobrir custos e garantir o lucro da concessionária contra inflação ou imprevistos, com cláusulas de revisão e reajuste previstas no contrato.", "t": "Tratar modicidade e equilíbrio como incompatíveis."}], "7": [{"id": "7-1", "q": "Quais os cinco requisitos cumulativos da contratação temporária (RE 658.026)?", "a": "Previsão em lei dos casos excepcionais; prazo predeterminado; necessidade temporária (não permanente); excepcional interesse público; indispensabilidade. Vedada para serviços ordinários permanentes sob contingências normais, salvo substituição temporária (surto de doenças, licença-maternidade).", "t": "Usar temporário para rotina permanente de saúde ou educação."}, {"id": "7-2", "q": "Qual o vínculo, o regime e a Justiça competente dos temporários?", "a": "Função pública autônoma (não cargo nem emprego); vínculo contratual de direito público, em regime especial (não é RJU nem CLT); Justiça Comum (Federal ou Estadual), não a do Trabalho. Seleção por processo seletivo simplificado (pode ser dispensado em calamidade).", "t": "Atribuir litígios à Justiça do Trabalho."}, {"id": "7-3", "q": "Quais os direitos dos temporários (Tema 551) e o que mais se aplica?", "a": "Regra: sem 13º e sem terço de férias. Exceções: previsão em lei local ou contrato, ou desvirtuamento por prorrogações ilegais sucessivas. FGTS só em contratos nulos. Quarentena de 24 meses entre contratos é constitucional. A gestante tem licença-maternidade e estabilidade provisória.", "t": "Conceder 13º e terço de férias como regra."}, {"id": "7-4", "q": "Como diferenciar processo seletivo simplificado e processo seletivo público?", "a": "Simplificado: para temporários. Público: exclusivo de agentes comunitários de saúde e de combate a endemias (ACS/ACE), que não são temporários.", "t": "Trocar os dois."}, {"id": "7-5", "q": "Qual a regra geral e os requisitos de acumulação de cargos?", "a": "Vedada, em toda a Administração direta e indireta (inclui empresas, subsidiárias e controladas). Só a CF abre exceções, com compatibilidade de horários (sem limite máximo de horas fixado), no máximo dois vínculos e observância do teto aferido em cada vínculo isoladamente. Vínculo privado, em regra, não é vedado.", "t": "Somar as remunerações para o teto."}, {"id": "7-6", "q": "Quais as hipóteses permitidas de acumulação?", "a": "Dois cargos de professor; um de professor com um técnico ou científico; dois cargos ou empregos privativos de profissionais de saúde com profissão regulamentada. Também: vereador com cargo efetivo (se houver compatibilidade de horário); juízes e membros do MP podem exercer um magistério. Técnico: exige conhecimento específico e habilitação profissional; científico: pesquisa e ampliação do conhecimento.", "t": "Admitir qualquer cargo técnico com técnico."}, {"id": "7-7", "q": "Como fica a acumulação de proventos de aposentadoria?", "a": "Regra: proibido acumular proventos do RPPS com remuneração de novo cargo ou duas aposentadorias do RPPS. Exceções: cargos acumuláveis na ativa, cargos eletivos e cargos em comissão. Quem se aposentou pelo RGPS pode ocupar qualquer cargo público e acumular sem essas restrições.", "t": "Estender a vedação ao aposentado pelo INSS."}, {"id": "7-8", "q": "Como fica o servidor que exerce mandato eletivo?", "a": "Federal, estadual ou distrital: afasta-se e recebe só o subsídio. Prefeito: afasta-se e opta pela remuneração mais vantajosa. Vereador: com compatibilidade de horários, acumula e recebe as duas remunerações; sem compatibilidade, afasta-se e opta. Tempo de serviço conta para todos os efeitos, exceto promoção por merecimento; mantém o regime previdenciário de origem.", "t": "Acumular remuneração de prefeito e de cargo."}, {"id": "7-9", "q": "Quais as modalidades de retribuição dos agentes?", "a": "Remuneração (vencimento básico + vantagens permanentes), subsídio (parcela única, sem acréscimos), salário (empregados públicos, CLT), proventos (aposentados) e pensão.", "t": "Admitir gratificação somada ao subsídio."}, {"id": "7-10", "q": "O subsídio é obrigatório para quem e quais parcelas permite?", "a": "Obrigatório: membros de Poder (Chefes do Executivo, magistrados, MP), mandatários eletivos, ministros e secretários, advocacia pública, Defensoria e carreiras policiais. Facultativo: servidores organizados em carreira. Permite indenizações (diárias), 13º, terço de férias, adicional noturno e hora-extra.", "t": "Vedar 13º e terço de férias no subsídio."}, {"id": "7-11", "q": "Como se fixa e altera a remuneração e o que diz a revisão geral anual?", "a": "Só por lei específica, com iniciativa privativa de cada Poder. SV 37: o Judiciário não aumenta vencimentos por isonomia. Revisão geral anual: mesma data e índice para todos; o Judiciário não obriga o Executivo, bastando justificativa fundamentada para a não concessão.", "t": "Aumentar vencimento por decisão judicial fundada em isonomia."}, {"id": "7-12", "q": "Qual o teto constitucional e os subtetos?", "a": "Teto: subsídio dos Ministros do STF. Municípios: subsídio do Prefeito. Estados e DF: Executivo (Governador), Legislativo (Deputados Estaduais), Judiciário, MP, Procuradores e Defensores (Desembargadores do TJ, até 90,25% do STF). Procuradores municipais: até 90,25% do STF. Juízes estaduais e federais: limitados ao STF.", "t": "Usar o subsídio do Governador como teto do Judiciário estadual."}, {"id": "7-13", "q": "Como o teto se aplica a acumulações, pensões e estatais?", "a": "Acumulações lícitas: aferido em cada vínculo, sem somar. Pensão (morte do instituidor): soma-se ao teto. Estatais: só as dependentes (que recebem recursos para pessoal ou custeio); não se aplica a Petrobras, Banco do Brasil e Caixa. Direta, autarquias e fundações: sempre.", "t": "Aplicar o teto a toda estatal."}, {"id": "7-14", "q": "O que são efeito cascata, irredutibilidade e suas exceções?", "a": "Efeito cascata vedado: acréscimos incidem só sobre o vencimento básico. Irredutibilidade: protege o valor nominal total, não a composição das parcelas; pode alterar a composição. Exceções: teto (abate-teto), efeito cascata, migração para subsídio (valor total nominal preservado), aumento de imposto. Não pode haver aumento de jornada sem aumento de remuneração.", "t": "Garantir direito adquirido à composição das parcelas."}, {"id": "7-15", "q": "O que veda a SV 42 e quanto às gratificações de cargo em comissão?", "a": "É vedado vincular o aumento de uma carreira ao de outra ou a índices federais de correção monetária (aumento automático vertical, horizontal ou por índices). É vedado incorporar gratificações de cargo em comissão ou função de confiança à remuneração do efetivo: saiu do cargo, perdeu a gratificação.", "t": "Permitir incorporação da gratificação de função."}, {"id": "7-16", "q": "Como funcionam o salário mínimo do servidor e as SVs 15 e 16?", "a": "SV 16: o salário mínimo se refere ao total da remuneração, e o vencimento básico pode ser inferior. SV 15: gratificações não incidem sobre o abono usado para atingir o mínimo, só sobre o vencimento básico. Em jornada reduzida (ex.: 20h) não se paga menos que o mínimo. É vedada a vinculação do mínimo para qualquer fim.", "t": "Usar o salário mínimo como indexador de vantagem."}, {"id": "7-17", "q": "Como são as licenças gestante e paternidade e os direitos correlatos?", "a": "Gestante: 120 dias + 60 de prorrogação; vale para comissionadas e temporárias, com estabilidade da confirmação até 5 meses após o parto. Paternidade: mínimo de 5 dias enquanto não houver lei; igual para filho biológico ou adotivo, sem distinção de idade; sem mãe, o pai tem 120+60 dias. Casal de mulheres: a não gestante tem direito se a companheira não usou; se usou, tem o período da paternidade.", "t": "Diferenciar prazo de adoção pela idade da criança."}, {"id": "7-18", "q": "Quais outros direitos sociais aparecem na CF para servidores?", "a": "13º salário, adicional noturno, salário-família, jornada de 8h diárias e 44h semanais, repouso semanal remunerado, hora-extra com no mínimo 50%, férias com 1/3, proteção do mercado de trabalho da mulher, saúde e segurança, e proibição de discriminação por sexo, idade, cor ou estado civil.", "t": "Trocar o adicional da hora-extra."}, {"id": "7-19", "q": "Qual o direito de sindicalização e de greve?", "a": "Servidores civis têm livre associação sindical; militares não. Greve (art. 37, VII): norma de eficácia limitada; na omissão do Congresso, aplica-se a Lei 7.783/1989; atividades essenciais podem ter regime mais severo. Proibida a militares (art. 142) e, segundo o STF, a todos os que atuam diretamente em segurança pública (policiais civis, federais, rodoviários e penais).", "t": "Admitir greve de policiais com contingente mínimo."}, {"id": "7-20", "q": "Qual o efeito da greve sobre a remuneração?", "a": "Regra: a Administração deve descontar os dias parados, sem processo administrativo prévio. Exceção: greve provocada por conduta ilícita do Poder Público (ex.: atraso de salários); a falta de revisão geral anual não é conduta ilícita. Compensação de horas por acordo; sem acordo, desconto parcelado (mínimo de 10% da remuneração, por analogia à Lei 8.112).", "t": "Tornar o desconto facultativo ou condicionado a processo."}, {"id": "7-21", "q": "Como a greve afeta o servidor em estágio probatório e quem julga a abusividade?", "a": "Adesão a greve não abusiva não é falta grave nem fato desabonador; mesmo com mais de 30 dias, não vira falta injustificada nem permite demissão por abandono de cargo. A abusividade é julgada pela Justiça Comum (Federal ou Estadual), mesmo para celetistas da Direta, autarquias e fundações.", "t": "Mandar a abusividade à Justiça do Trabalho."}, {"id": "7-22", "q": "Qual o regime previdenciário dos agentes e quais as modalidades de aposentadoria no RPPS?", "a": "RPPS: titulares de cargo efetivo e vitalícios. RGPS: empregados públicos, temporários, mandatários eletivos e ocupantes exclusivos de cargo em comissão; os estabilizados sem concurso pelo art. 19 do ADCT também. Aposentadoria: por incapacidade permanente, compulsória aos 75 anos (não alcança cargo exclusivamente comissionado) e voluntária (na União, 62 anos mulheres e 65 homens).", "t": "Submeter o comissionado exclusivo à compulsória de 75 anos."}, {"id": "7-23", "q": "Qual a diferença entre estabilidade e estágio probatório?", "a": "Estabilidade: concurso + 3 anos de efetivo exercício + avaliação especial de desempenho; adquirida no serviço público. Estágio probatório: período de avaliação para cada cargo, com 36 meses segundo o STF. Servidor já estável que passa em novo concurso no mesmo ente cumpre novo estágio e pode ser considerado estável antes de concluí-lo.", "t": "Usar o prazo de 24 meses para o estágio."}, {"id": "7-24", "q": "Quando o servidor estável perde o cargo?", "a": "(1) Sentença judicial transitada em julgado; (2) PAD com ampla defesa (pode produzir efeitos mesmo sujeito a recurso); (3) avaliação periódica de desempenho (lei complementar ainda não editada); (4) excesso de despesa com pessoal (art. 169): medida subsidiária, após reduzir ao menos 20% dos cargos em comissão e exonerar não estáveis; indenização de um mês por ano de serviço; cargo extinto e vedada criação de cargo igual por 4 anos.", "t": "Esquecer que a avaliação periódica depende de lei complementar."}, {"id": "7-25", "q": "O que é vitaliciedade?", "a": "Proteção máxima: só se perde o cargo por sentença judicial transitada em julgado. Própria de magistrados, membros do MP e ministros de Tribunais de Contas. Juízes de 1º grau e promotores a adquirem após 2 anos; ministros de Tribunais Superiores, na posse.", "t": "Admitir perda por PAD."}, {"id": "7-26", "q": "Como são as responsabilidades civil, penal e administrativa e quando se comunicam?", "a": "Instâncias independentes e acumuláveis. A absolvição criminal só vincula as demais se negar a existência do fato ou a autoria; falta de provas, atipicidade ou ausência de culpabilidade não afastam. Súmula 18 do STF: pode haver punição por falta residual não compreendida na absolvição. Civil: o Estado indeniza e move ação regressiva (responsabilidade subjetiva do servidor); a obrigação alcança os sucessores até o limite da herança.", "t": "Estender a absolvição por falta de provas às esferas civil e administrativa."}, {"id": "7-27", "q": "Diferencie reintegração, recondução e aproveitamento.", "a": "Reintegração: retorno do estável ao cargo quando a demissão é invalidada, com ressarcimento total. Recondução: retorno do estável ao cargo anterior por inabilitação ou desistência em estágio de outro cargo, ou pela reintegração do ocupante anterior (sem indenização). Aproveitamento: reingresso do servidor em disponibilidade quando surge vaga com atribuições e vencimentos compatíveis.", "t": "Trocar recondução e reintegração."}], "4": [{"id": "4-1", "q": "O que é ato administrativo e como se distingue do ato da Administração?", "a": "Ato administrativo: declaração unilateral de vontade do Estado (ou delegatários), sob regime de direito público, com efeitos jurídicos imediatos e sujeita a controle judicial (espécie). Ato da Administração: gênero amplo, que inclui atos de direito privado, atos materiais, atos políticos, contratos, enunciativos e os atos administrativos propriamente ditos.", "t": "Dizer que o ato administrativo é o gênero e abrange atos privados."}, {"id": "4-2", "q": "Diferencie ato administrativo e fato administrativo.", "a": "Ato: manifestação de vontade. Fato administrativo: execução material (limpeza de rua, demolição) ou evento da natureza que gera efeitos no Direito Administrativo (morte de servidor gera vacância). Ex.: a ordem de demolição é o ato; a demolição física é o fato.", "t": "Trocar a decisão pela sua execução material."}, {"id": "4-3", "q": "O silêncio administrativo é ato administrativo?", "a": "Não: falta manifestação de vontade; é fato jurídico administrativo. Seus efeitos (anuência ou negativa tácita) dependem de previsão legal. Sem previsão, o silêncio não produz efeitos, e o administrado recorre ao Judiciário: em ato vinculado, o juiz fixa prazo ou defere; em discricionário, só determina decisão motivada.", "t": "Tratar o silêncio como ato administrativo ou presumir deferimento sem lei."}, {"id": "4-4", "q": "Quais os elementos de validade do ato (COMFIFORMOB) e a natureza de cada um?", "a": "Competência, Finalidade, Forma, Motivo e Objeto. Competência, finalidade e forma: sempre vinculados. Motivo e objeto: vinculados ou discricionários (o mérito incide só neles).", "t": "Dizer que no ato discricionário todos os elementos são livres."}, {"id": "4-5", "q": "Quais as características da competência e da delegação?", "a": "Competência: poder legal conferido ao agente; irrenunciável, imprescritível, imodificável, intransferível, mas admite delegação e avocação; sempre vinculada; vício sanável (salvo competência exclusiva ou em razão da matéria). Delegação: transfere a execução, titularidade permanece, independe de hierarquia, revogável a qualquer momento; não se delega o que a lei impede (CENORA).", "t": "Dizer que a competência se perde pelo não uso."}, {"id": "4-6", "q": "Como é a finalidade do ato e que vício a atinge?", "a": "Objetivo do ato: geral (interesse público) e específica (fim previsto em lei); sempre vinculada; manifestação da impessoalidade. O desvio de finalidade (ou de poder) é vício insanável.", "t": "Admitir convalidação do desvio de finalidade."}, {"id": "4-7", "q": "Como é a forma do ato (sentidos estrito e amplo)?", "a": "Estrito: modo de exteriorização (escrita, decreto, portaria). Amplo: procedimento (formalidades) + meio de exteriorização (devido processo legal; publicidade, contraditório, notificação). Regra: forma escrita; admite gestos e sinais (semáforo). Sempre vinculada; vício sanável, salvo forma essencial.", "t": "Considerar a forma discricionária."}, {"id": "4-8", "q": "Diferencie motivo e motivação.", "a": "Motivo: pressupostos de fato e de direito que autorizam o ato (elemento essencial, causa). Motivação: exposição escrita do porquê, que integra o elemento forma. Ausência de motivação obrigatória é vício de forma. Ex.: dispensa de licitação emergencial sem explicar o porquê.", "t": "Dizer que a falta de motivação invalida o elemento motivo."}, {"id": "4-9", "q": "O que diz a teoria dos motivos determinantes?", "a": "Se a Administração motiva o ato (mesmo sem obrigação, como na exoneração ad nutum), a validade fica vinculada à veracidade dos motivos expostos. Aplica-se a atos vinculados e discricionários. Motivo falso ou inexistente torna o ato nulo (inclusive o ato de revogação ou anulação).", "t": "Dizer que a exoneração ad nutum não se sujeita à teoria."}, {"id": "4-10", "q": "Como é o objeto do ato e quais seus requisitos?", "a": "Efeito jurídico imediato (o que o ato decide). Deve ser lícito, possível, certo e moral. Pode ser vinculado (licença-paternidade de 5 dias) ou discricionário (suspensão ou multa). Vício insanável.", "t": "Confundir objeto (fim imediato) com finalidade (resultado desejado)."}, {"id": "4-11", "q": "O que é mérito administrativo e onde incide?", "a": "Juízo de conveniência e oportunidade, margem de escolha entre soluções legalmente válidas; só existe em atos discricionários e incide na valoração do motivo e na escolha do objeto. Atos vinculados não têm mérito.", "t": "Dizer que o mérito alcança competência, finalidade e forma."}, {"id": "4-12", "q": "Quem controla o mérito e como fica o controle judicial?", "a": "A Administração, por autotutela, pode manter ou revogar. O Judiciário não controla mérito (só legalidade e juridicidade), mas pode anular atos discricionários que extrapolem a lei ou sejam arbitrários e desarrazoados, pois isso é ilegalidade.", "t": "Dizer que o Judiciário revoga atos por inconveniência."}, {"id": "4-13", "q": "Quais são os atributos do ato administrativo (PATI) e quais são universais?", "a": "Presunção de legitimidade, Autoexecutoriedade, Tipicidade e Imperatividade. Universais: presunção de legitimidade/veracidade e tipicidade. Autoexecutoriedade e imperatividade existem só em alguns atos.", "t": "Dizer que imperatividade e autoexecutoriedade existem em todos os atos."}, {"id": "4-14", "q": "Como funciona a presunção de legitimidade?", "a": "Presume-se que o ato segue a lei e os fatos são verdadeiros; produz efeitos até a decretação da invalidade. Gera inversão do ônus da prova contra o particular (não é regra). Não é absoluta: ordens manifestamente ilegais não devem ser cumpridas.", "t": "Considerá-la absoluta."}, {"id": "4-15", "q": "Quando há autoexecutoriedade e como se distinguem exigibilidade e executoriedade?", "a": "Quando há previsão em lei (ex.: apreensão de mercadorias) ou urgência (demolição de imóvel em risco de desabamento). Não afasta o controle judicial. Exigibilidade: meios indiretos (multa de trânsito). Executoriedade: meios diretos de força (sinônimo de autoexecutoriedade).", "t": "Achar que a autoexecutoriedade impede o controle judicial."}, {"id": "4-16", "q": "O que é a tipicidade e a quais atos se aplica?", "a": "O ato deve corresponder a figuras previamente definidas em lei (legalidade); não existem atos unilaterais inominados. Aplica-se só a atos unilaterais; contratos, por serem bilaterais, podem ser inominados.", "t": "Aplicar a tipicidade aos contratos administrativos."}, {"id": "4-17", "q": "O que é imperatividade?", "a": "Capacidade de impor obrigações ou restrições a terceiros independentemente de concordância (poder extroverso). Depende de previsão legal; não está presente nos atos que concedem direitos, nos negociais e nos enunciativos.", "t": "Estendê-la a atos negociais e enunciativos."}, {"id": "4-18", "q": "Quais são os vícios de competência?", "a": "Excesso de poder (agente competente extrapola os limites; em regra sanável, exceto competência exclusiva ou em razão da matéria); função de fato (investidura irregular, mas ato válido perante terceiros de boa-fé, pela teoria da aparência); usurpação de função (quem não tem vínculo algum; crime; ato inexistente); incapacidade (impedimento ou suspeição).", "t": "Considerar válido o ato do usurpador de função."}, {"id": "4-19", "q": "Como são os vícios de motivo e de objeto?", "a": "Motivo: falso, inexistente ou juridicamente inadequado (ex.: demitir por ser “muito alto”); insanável. Objeto: proibido ou não previsto em lei, diverso do previsto, impossível, imoral ou incerto; insanável.", "t": "Convalidar vício de motivo ou de objeto."}, {"id": "4-20", "q": "Como se classificam os atos quanto à formação da vontade?", "a": "Simples (vontade de um único órgão, unipessoal ou colegiado); complexo (conjugação de vontades de dois ou mais órgãos num único ato, ex.: aposentadoria); composto (ato principal que depende de ato acessório, como visto, aprovação ou homologação, para ter eficácia).", "t": "Trocar complexo e composto."}, {"id": "4-21", "q": "Como se classificam os atos quanto aos efeitos, à eficácia e à exequibilidade?", "a": "Efeitos: constitutivo, modificativo, extintivo, declaratório. Eficácia: válido, nulo (vício insanável), anulável (vício sanável), inexistente. Exequibilidade: perfeito, imperfeito, eficaz, pendente, consumado.", "t": "Chamar de nulo o ato com vício sanável."}, {"id": "4-22", "q": "O que são atos normativos e ordinatórios?", "a": "Normativos: comandos gerais e abstratos, secundários, sem inovar (exceto decreto autônomo); ex.: decretos, regulamentos, resoluções, instruções normativas. Ordinatórios: disciplinam o funcionamento interno e a conduta funcional, com base no poder hierárquico e alcance interno; ex.: portarias, circulares, ordens de serviço, ofícios, despachos.", "t": "Atribuir alcance externo aos ordinatórios."}, {"id": "4-23", "q": "Como se diferenciam licença, autorização e permissão (LAP)?", "a": "Licença: unilateral, vinculada, definitiva (pode ser cassada ou anulada, não livremente revogada); ex.: dirigir, construir. Autorização: unilateral, discricionária e precária, interesse predominantemente do particular. Permissão: unilateral, discricionária e precária, interesse predominantemente público; pode ser ato ou contrato (delegação de serviço por licitação). Sem indenização na revogação, em regra.", "t": "Dizer que a licença é discricionária ou livremente revogável."}, {"id": "4-24", "q": "Quais são os atos enunciativos (CAPA)?", "a": "Certidões, Atestados, Pareceres e Apostilas: a Administração declara fato preexistente ou emite opinião, sem criar direitos ou obrigações; são atos administrativos só em sentido formal.", "t": "Atribuir imperatividade aos enunciativos."}, {"id": "4-25", "q": "O que são atos punitivos e de que poderes derivam?", "a": "Reprimem infrações de servidores (sanções internas: advertência, suspensão, demissão, cassação de aposentadoria; poder disciplinar) e de particulares (sanções externas: multas, interdição, destruição de coisas; poder de polícia).", "t": "Atribuir multa ao poder disciplinar."}, {"id": "4-26", "q": "Quais são as formas de extinção natural do ato?", "a": "Natural (cumpre a finalidade), subjetiva (desaparece o beneficiário), objetiva (desaparece o objeto) e renúncia (o beneficiário abre mão voluntariamente).", "t": "Confundir com anulação ou revogação."}, {"id": "4-27", "q": "Compare anulação e revogação.", "a": "Anulação: ilegalidade; efeitos ex tunc; Administração ou Judiciário. Revogação: mérito; efeitos ex nunc; só a Administração; atinge ato válido, eficaz e discricionário. Mnemônico: tapa na testa (cabeça para trás, ex tunc); tapa na nuca (cabeça para frente, ex nunc).", "t": "Dizer que a revogação retroage."}, {"id": "4-28", "q": "Defina cassação, caducidade e contraposição.", "a": "Cassação: descumprimento de regras pelo beneficiário (vinculada, sancionatória, em regra ex nunc). Caducidade: lei nova torna proibida a situação anterior, cessando a eficácia. Contraposição (derrubada): novo ato de efeitos opostos (exoneração contra nomeação).", "t": "Chamar de revogação a retirada da licença por descumprimento."}, {"id": "4-29", "q": "O que não pode ser revogado?", "a": "Atos vinculados, atos que já exauriram os efeitos, enunciativos (certidões e pareceres), atos que geraram direito adquirido e atos de procedimento (preclusão).", "t": "Revogar licença, que é ato vinculado."}, {"id": "4-30", "q": "Qual o prazo para a Administração federal anular atos favoráveis?", "a": "5 anos, para atos favoráveis a destinatários de boa-fé, salvo má-fé e atos de efeito desfavorável. Atos flagrantemente inconstitucionais não se submetem ao prazo (STF).", "t": "Aplicar o prazo à má-fé."}, {"id": "4-31", "q": "O que é convalidação, seus requisitos e vícios sanáveis (FoCo)?", "a": "Saneamento de atos com vício sanável, com efeitos ex tunc; abrange atos vinculados e discricionários. Requisitos: sem lesão ao interesse público nem prejuízo a terceiros, e vício sanável. Sanáveis: Forma (se não essencial) e Competência (se não exclusiva nem em razão da matéria). Finalidade, motivo e objeto: em regra insanáveis.", "t": "Convalidar finalidade ou motivo."}], "2": [{"id": "2-1", "q": "Quais são as características comuns a toda a Administração Indireta?", "a": "Personalidade jurídica própria, patrimônio e receita próprios, autonomia técnica, administrativa e financeira (sem autonomia política); vinculação à Direta (sem hierarquia); especialidade; observância do LIMPE; concurso público e dever de licitar (em regra); vedação de acumulação; controle do Tribunal de Contas e do Legislativo; agentes tratados como públicos para improbidade e equiparados a funcionários públicos para fins penais.", "t": "Atribuir autonomia política ou legislativa às entidades."}, {"id": "2-2", "q": "Quais entidades são criadas por lei e quais têm a criação autorizada por lei?", "a": "Criadas por lei específica: autarquias e fundações públicas de direito público. Autorizadas por lei específica: empresas públicas, sociedades de economia mista e fundações de direito privado, que só nascem com o registro dos atos constitutivos.", "t": "Inverter quais são criadas e quais são autorizadas."}, {"id": "2-3", "q": "Como é a autarquia quanto à natureza, criação e atividade?", "a": "Direito público; criada por lei específica de iniciativa privativa do Chefe do Executivo; adquire personalidade com a vigência da lei, sem registro em cartório; exerce atividade típica de Estado (INSS, Bacen, universidades). Extinção também por lei específica (paralelismo).", "t": "Exigir registro em cartório para a autarquia."}, {"id": "2-4", "q": "Quais são as prerrogativas das autarquias?", "a": "Imunidade tributária recíproca (patrimônio, renda e serviços vinculados às finalidades essenciais); bens públicos (impenhoráveis, imprescritíveis, alienação restrita); precatórios (art. 100); prazo em dobro e duplo grau obrigatório; prescrição quinquenal das dívidas.", "t": "Estender essas prerrogativas a EP e SEM exploradoras de atividade econômica."}, {"id": "2-5", "q": "Como é o regime de pessoal e a responsabilidade civil das autarquias?", "a": "Concurso obrigatório; regime estatutário (predominante) ou celetista. Responsabilidade objetiva (risco administrativo, art. 37, §6º). Autarquias federais: Justiça Federal; estaduais ou municipais: Justiça Estadual. Lides de pessoal celetista: Justiça do Trabalho.", "t": "Exigir culpa ou dolo na responsabilidade da autarquia."}, {"id": "2-6", "q": "O que são agências reguladoras e qual a regra de seus dirigentes?", "a": "Autarquias em regime especial, com maior independência frente ao poder central. Dirigentes: mandato fixo (na esfera federal, 5 anos, vedada a recondução), sem exoneração ad nutum (só perdem o cargo por renúncia, condenação transitada em julgado ou PAD) e quarentena de 6 meses com remuneração compensatória.", "t": "Dizer que o Presidente pode exonerar livremente os dirigentes."}, {"id": "2-7", "q": "Como é o controle sobre as agências reguladoras?", "a": "Não há tutela nem hierarquia com o Ministério, apenas vinculação. Admite-se recurso hierárquico impróprio apenas se a agência fugir de suas finalidades legais. Exercem regulação e fiscalização de serviços públicos (Anatel, Anvisa) e poder de polícia em atividades privadas.", "t": "Admitir recurso hierárquico impróprio como regra."}, {"id": "2-8", "q": "O que é agência executiva?", "a": "Não é nova entidade: é título ou qualificação dada a autarquias ou fundações que celebram contrato de gestão, concedida de forma discricionária se preenchidos os requisitos legais.", "t": "Tratá-la como espécie nova de pessoa jurídica."}, {"id": "2-9", "q": "Como ficam os conselhos profissionais e a OAB?", "a": "Conselhos (CRM, CREA): autarquias corporativas de direito público; prestam contas ao TCU, licitam e fazem concurso, mas não se submetem ao regime de precatórios e contratam pela CLT. OAB: segundo o STF, é de direito privado, não é autarquia e não integra a Administração (não presta contas, não licita, não faz concurso).", "t": "Tratar a OAB como autarquia."}, {"id": "2-10", "q": "O que têm em comum empresas públicas e sociedades de economia mista?", "a": "Personalidade de direito privado, criação autorizada por lei (nascem com o registro), regime híbrido; podem explorar atividade típica de Estado ou atividade econômica (neste caso, regime próprio das empresas privadas); extinção por autorização legislativa (pode ser lei genérica); sujeitas ao Tribunal de Contas.", "t": "Exigir lei específica para a extinção."}, {"id": "2-11", "q": "Como são o patrimônio e a falência das estatais?", "a": "Bens de natureza privada, sem impenhorabilidade nem imprescritibilidade, salvo os de estatais prestadoras de serviço público (bens diretamente vinculados à prestação são impenhoráveis). Nenhuma estatal se sujeita à falência; se não conseguir pagar, o ente instituidor responde de forma subsidiária.", "t": "Dizer que EP e SEM podem falir por serem de direito privado."}, {"id": "2-12", "q": "Estatais têm benefícios fiscais e imunidade recíproca?", "a": "Exploradoras de atividade econômica não podem ter privilégios fiscais não extensivos ao setor privado, salvo em monopólio. Pela letra da CF, a imunidade não alcança EP e SEM, mas o STF a estendeu às que prestam serviços públicos obrigatórios e exclusivos do Estado, sem distribuir lucros e sem ações negociadas em bolsa (ex.: Correios, Infraero).", "t": "Estender a imunidade a toda estatal."}, {"id": "2-13", "q": "Como é o regime de pessoal das estatais?", "a": "CLT (emprego público), concurso obrigatório, sem estabilidade (art. 41). A demissão de concursados deve ser motivada com fundamento razoável, sem exigir processo administrativo ou contraditório. Teto só para estatais dependentes. RGPS; litígios na Justiça do Trabalho; agentes públicos para improbidade.", "t": "Exigir PAD para demitir empregado público."}, {"id": "2-14", "q": "Como a atividade da estatal define o regime e a responsabilidade civil?", "a": "Atividade econômica: regime predominantemente privado e responsabilidade subjetiva (dolo ou culpa). Serviço público: regras predominantemente de direito público e responsabilidade objetiva.", "t": "Aplicar responsabilidade objetiva a toda estatal."}, {"id": "2-15", "q": "Quais as três diferenças fundamentais entre EP e SEM?", "a": "Capital: EP 100% público; SEM misto, com maioria votante estatal. Forma: EP qualquer forma admitida em direito; SEM obrigatoriamente S.A. Foro (entidades federais): EP na Justiça Federal; SEM na Justiça Estadual (Súmulas 508 do STF e 42 do STJ).", "t": "Trocar as três diferenças entre si."}, {"id": "2-16", "q": "Julgue: as causas do Banco do Brasil (SEM federal) são julgadas pela Justiça Federal.", "a": "ERRADO. SEM federal tem causas na Justiça Estadual. A EP federal (ex.: Caixa) é julgada pela Justiça Federal.", "t": "Inverter o foro de EP e SEM."}, {"id": "2-18", "q": "Diferencie fundações privadas e fundações públicas quanto ao instituidor.", "a": "Privadas: nascem da iniciativa de particulares, que destinam parte do patrimônio a fins sociais. Públicas: instituídas pelo Estado, com dotação patrimonial e recursos orçamentários, para atividades de interesse social (assistência, saúde, educação, pesquisa, cultura).", "t": "Chamar de pública a fundação instituída por particular."}, {"id": "2-19", "q": "Quais as naturezas das fundações públicas e como nascem?", "a": "Direito público (fundações autárquicas): equiparadas a autarquias; criadas por lei específica, com personalidade desde a vigência da lei; extinção por lei específica. Direito privado: regime híbrido; criação autorizada por lei específica, com personalidade só com o registro do ato constitutivo no Cartório de Registro Civil de Pessoas Jurídicas; extinção autorizada por lei.", "t": "Dizer que toda fundação pública é de direito público."}, {"id": "2-20", "q": "Qual o papel da lei complementar quanto às fundações públicas?", "a": "A CF exige lei complementar para definir as áreas de atuação de todas as fundações públicas. Ela não as cria nem as autoriza individualmente: isso cabe à lei específica.", "t": "Atribuir à lei complementar a criação das fundações."}, {"id": "2-22", "q": "É possível constituir fundação pública para explorar atividade econômica? E qual o foro federal?", "a": "Não. Fundação pública é só para atividades sociais; atividade econômica é de EP e SEM. Foro federal: fundações de direito público na Justiça Federal; as de direito privado também, segundo a jurisprudência do STJ (equiparadas a EP), embora a doutrina divirja.", "t": "Permitir fundação pública exploradora de atividade econômica."}, {"id": "2-23", "q": "Comparativo: como é a extinção das entidades da Administração Indireta?", "a": "Autarquia: lei específica (paralelismo). EP e SEM: autorização legislativa (pode ser lei genérica de desestatização). Fundação de direito público: lei. Fundação de direito privado: autorização em lei.", "t": "Exigir lei específica para extinguir EP e SEM."}, {"id": "2-24", "q": "Comparativo: quais são o regime e a responsabilidade civil de cada entidade?", "a": "Autarquia: direito público; responsabilidade objetiva. EP e SEM: direito privado (híbrido); objetiva se serviço público e subjetiva se atividade econômica. Fundação pública: público (autárquico) ou privado; objetiva como regra para prestadoras de serviço público.", "t": "Aplicar a mesma responsabilidade a todas."}], "3": [{"id": "3-1", "q": "O que significa dizer que poder administrativo é poder-dever?", "a": "Para o agente público, o poder é um dever de agir: não é faculdade de atuar ou não, e sim instrumento para atender ao interesse público.", "t": "Tratar o poder como mera faculdade do agente."}, {"id": "3-2", "q": "Diferencie poder vinculado e discricionário, e oportunidade e conveniência.", "a": "Vinculado: a lei não deixa margem; o agente é obrigado a agir. Discricionário: o agente avalia o mérito (conveniência e oportunidade) nos limites da lei, da razoabilidade e da proporcionalidade. Oportunidade: o momento da edição do ato. Conveniência: as circunstâncias e condições de edição.", "t": "Trocar oportunidade (momento) por conveniência (circunstâncias)."}, {"id": "3-3", "q": "O que abrange o poder hierárquico?", "a": "Ordenar, fiscalizar, delegar e avocar (excepcional e temporário); editar atos normativos internos; rever atos de subordinados (anular ou revogar). Não há hierarquia entre Direta e Indireta (há vinculação e tutela) nem entre Poderes.", "t": "Falar em hierarquia entre Poderes ou entre Direta e Indireta."}, {"id": "3-4", "q": "O que não se pode delegar (CENORA) e qual a diferença entre delegação e avocação?", "a": "CENORA: Competência exclusiva, atos Normativos e Recursos administrativos. Delegação: transfere a execução (titularidade fica com o delegante), com ou sem hierarquia, revogável a qualquer tempo. Avocação: chamar para si função de subordinado; só com hierarquia, discricionária, excepcional, temporária e por motivos relevantes justificados.", "t": "Admitir avocação sem hierarquia."}, {"id": "3-5", "q": "O que é o poder disciplinar e como se estrutura?", "a": "Punir infrações de servidores e de particulares com vínculo específico (ex.: contratados). Exige motivação obrigatória, contraditório e ampla defesa. É parte vinculado e parte discricionário (tipificação da falta vinculada; escolha e gradação da penalidade com margem). Servidores sujeitam-se ao poder disciplinar e ao hierárquico; particulares com vínculo especial, só ao disciplinar.", "t": "Dizer que o poder disciplinar é totalmente discricionário."}, {"id": "3-6", "q": "Compare poder disciplinar e poder de polícia.", "a": "Vínculo: disciplinar específico (funcional ou contratual); polícia geral (todos os cidadãos). Âmbito: disciplinar interno; polícia externo, em prol da coletividade. Objeto: infrações funcionais × direitos, bens e atividades. Fundamento: hierarquia (para servidores) × supremacia do interesse público.", "t": "Classificar multa de trânsito como poder disciplinar."}, {"id": "3-7", "q": "Qual a função do poder regulamentar e quem o exerce?", "a": "Editar atos que complementam as leis para permitir sua aplicação (decretos para fiel execução), conferido ao chefe do Executivo de todas as esferas. Não inova o ordenamento. A expedição de decretos e regulamentos pelo Presidente é indelegável.", "t": "Dizer que o decreto regulamentar inova a ordem jurídica."}, {"id": "3-8", "q": "Quais são as exceções em que o ato do Executivo pode inovar?", "a": "Decreto autônomo (privativo do PR): (a) organização e funcionamento da administração federal, sem custos e sem criar nem extinguir órgãos; (b) extinção de cargos, apenas quando vagos. Regulamentos autorizados: suprem lacunas deixadas propositalmente pelo legislador.", "t": "Admitir decreto autônomo para criar órgãos ou aumentar despesa."}, {"id": "3-9", "q": "O que é o poder normativo em sentido amplo?", "a": "Toda a capacidade normativa da Administração, que envolve várias autoridades (não só chefes do Executivo): instruções normativas de ministros, resoluções de órgãos colegiados, portarias. Ex.: resoluções e normas técnicas das agências reguladoras.", "t": "Restringi-lo ao chefe do Executivo."}, {"id": "3-10", "q": "Quem controla os atos normativos que extrapolam o poder regulamentar?", "a": "O Congresso pode sustar atos normativos do Executivo que ultrapassem o poder regulamentar, e eles se sujeitam ao controle de legalidade do Judiciário.", "t": "Dizer que ficam imunes ao controle."}, {"id": "3-11", "q": "O que é poder de polícia e como se divide?", "a": "Faculdade de condicionar e restringir direitos, bens e atividades individuais em prol do interesse público. Polícia administrativa: atua sobre bens e atividades, predominantemente preventiva. Polícia judiciária: atua sobre pessoas envolvidas em crimes, predominantemente repressiva.", "t": "Trocar o caráter preventivo e repressivo das duas."}, {"id": "3-12", "q": "Quais os atributos do poder de polícia (DAC)?", "a": "Discricionariedade (margem de escolha na fiscalização e sanção, exceto em licenças, que são vinculadas); Autoexecutoriedade (executa sem ordem judicial, com urgência ou previsão legal; não está em todas as medidas); Coercibilidade (imposição coativa).", "t": "Dizer que a autoexecutoriedade está em todas as medidas."}, {"id": "3-13", "q": "Quais são as fases do ciclo de polícia?", "a": "(1) Ordem ou legislação (normas que condicionam ou restringem direitos); (2) consentimento (anuência prévia: licenças e autorizações); (3) fiscalização; (4) sanção. Atos preventivos: licenças (vinculadas) e autorizações (discricionárias). Atos repressivos: multas.", "t": "Misturar a ordem de legislação e sanção."}, {"id": "3-14", "q": "O que diferencia o poder de polícia originário do delegado?", "a": "Originário: exercido pelas entidades políticas, pela Administração direta. Delegado/outorgado: exercido pela Administração indireta.", "t": "Entender delegação como transferência a particulares."}, {"id": "3-15", "q": "O STF admite delegar o poder de polícia? Em que condições?", "a": "É constitucional delegar consentimento, fiscalização e sanção a estatais de direito privado (EP e SEM) que prestem serviço público exclusivo, não concorrencial, de capital majoritariamente público, por meio de lei. A fase de ordem (legislativa) é indelegável. A autarquias e fundações autárquicas, é possível delegar todas as fases, exceto a edição de normas primárias. Proibida a entidades de direito privado exploradoras de atividade econômica.", "t": "Admitir delegação do poder de polícia a particulares."}, {"id": "3-16", "q": "Julgue: o poder de polícia pode ser delegado a particulares.", "a": "ERRADO. Somente atividades materiais de apoio podem ser terceirizadas.", "t": "Confundir apoio material com o exercício do poder de polícia."}, {"id": "3-17", "q": "As multas de polícia são autoexecutórias?", "a": "A aplicação da multa é autoexecutória; a cobrança forçada exige o Judiciário. Exigibilidade: meios indiretos de coação (administrado executa a medida). Executoriedade (autoexecutoriedade): meios diretos, com uso de força (a Administração executa).", "t": "Dizer que o Estado pode “tomar” o valor da multa sem ação judicial."}, {"id": "3-18", "q": "Qual a diferença entre excesso de poder e desvio de finalidade?", "a": "Excesso de poder: vício de competência (o agente atua fora de sua competência legal). Desvio de finalidade: vício de finalidade (o agente tem competência, mas busca fim diverso do interesse público ou do previsto em lei; ex.: remoção-castigo). Ambos formam o abuso de poder.", "t": "Trocar os dois conceitos."}, {"id": "3-19", "q": "Cabe recurso hierárquico impróprio das decisões de agências reguladoras para o Ministério?", "a": "Apenas se a agência fugir de sua finalidade legal, pois não há subordinação, só tutela.", "t": "Admitir revisão ministerial como regra."}], "6": [{"id": "6-1", "q": "Qual a teoria que explica a atuação do agente em nome do Estado e qual o conceito legal de agente público?", "a": "Teoria do órgão: a atuação do agente é imputada diretamente ao Estado. Conceito (Lei 8.429/92): quem exerce, ainda que transitoriamente ou sem remuneração, por eleição, nomeação, designação, contratação ou qualquer forma de investidura, mandato, cargo, emprego ou função nas entidades estatais. Vai do Presidente ao mesário, ao estagiário e ao motorista de concessionária.", "t": "Restringir agente público a quem tem remuneração."}, {"id": "6-2", "q": "Qual a classificação de Hely Lopes Meirelles dos agentes públicos?", "a": "Agentes políticos; agentes administrativos (servidores públicos, empregados públicos e temporários); agentes honoríficos; agentes delegados; agentes credenciados.", "t": "Esquecer os agentes credenciados."}, {"id": "6-3", "q": "Quem são os agentes políticos?", "a": "Altos escalões do governo, com plena liberdade funcional e subsídio: Chefes do Executivo, auxiliares imediatos (ministros e secretários), parlamentares e magistrados. O STF tende a considerar membros de Tribunais de Contas ocupantes de cargos administrativos para fins de nepotismo.", "t": "Incluir servidores comuns."}, {"id": "6-4", "q": "Quem são os agentes administrativos e de que tipos?", "a": "O maior grupo: atividade profissional e hierarquizada. Servidores públicos (titulares de cargo, regime estatutário); empregados públicos (CLT, comuns em EP e SEM); temporários (art. 37, IX; exercem função, não ocupam cargo nem emprego; regime especial).", "t": "Dizer que temporários ocupam cargo."}, {"id": "6-5", "q": "Diferencie agentes honoríficos, delegados e credenciados.", "a": "Honoríficos: cidadãos convocados para serviços relevantes (mesários, jurados), vínculo transitório, geralmente sem remuneração. Delegados: particulares que executam serviço em nome próprio, por sua conta e risco (concessionários, permissionários, leiloeiros, notários); responsabilidade objetiva. Credenciados: representam a Administração em ato específico mediante remuneração.", "t": "Dizer que os delegados são representantes da Administração."}, {"id": "6-6", "q": "Diferencie agentes de fato necessários e putativos.", "a": "Necessários: atuam em emergência ou calamidade (cidadão que assume como autoridade numa enchente). Putativos: atuam sob presunção de legitimidade, com vício na investidura (nomeado sem concurso). Atos são válidos perante terceiros de boa-fé (teoria da aparência) e o agente tem direito à remuneração, para evitar enriquecimento ilícito.", "t": "Inverter necessários e putativos."}, {"id": "6-7", "q": "Quais os requisitos da teoria da aparência e como ela difere de excesso de poder e desvio de finalidade?", "a": "Aparência objetiva de legitimidade, boa-fé do terceiro (sem conluio) e atuação compatível com o esperado da função. Excesso e desvio são vícios de agentes regularmente investidos; na aparência, o agente não tem investidura regular e o foco é a plausibilidade objetiva do ato. Sem ela, afasta-se a proteção a terceiros.", "t": "Aplicar a teoria ao usurpador."}, {"id": "6-8", "q": "Diferencie cargo, emprego e função pública.", "a": "Cargo: unidade de competência criada por lei, com vencimento pago pelos cofres públicos (efetivo ou comissionado); regime estatutário. Emprego: vínculo celetista; comum em estatais e agora permitido também na Administração Direta. Função: conjunto de atribuições; as autônomas (confiança, temporários) não têm cargo vinculado.", "t": "Dizer que emprego público é vedado na Administração Direta."}, {"id": "6-9", "q": "O que mudou com o fim da obrigatoriedade do Regime Jurídico Único?", "a": "A EC 19/1998 extinguiu a obrigatoriedade do RJU, mas a mudança ficou suspensa por liminar do STF (ADI 2.135). Em 2024, o STF julgou o mérito e a considerou constitucional: União, Estados e Municípios podem instituir regime estatutário ou celetista na Direta e autárquica, conforme a lei de cada carreira. Espera-se o estatutário nas carreiras típicas de Estado.", "t": "Dizer que o RJU continua obrigatório."}, {"id": "6-10", "q": "Como é o regime estatutário?", "a": "Vínculo legal e unilateral; a Administração altera regras por lei, sem direito adquirido à imutabilidade (exceto se já preenchidos os requisitos do direito); pluralidade normativa (cada ente tem seu regime); litígios na Justiça Comum (Federal ou Estadual); estabilidade (exceto cargo comissionado).", "t": "Atribuir litígios estatutários à Justiça do Trabalho."}, {"id": "6-11", "q": "Como é o regime celetista no serviço público?", "a": "Vínculo contratual e bilateral; alterações exigem anuência mútua e mudanças na CLT só valem para contratos futuros; litígios na Justiça do Trabalho (exceto fase pré-contratual do concurso, que é da Justiça Comum); sem estabilidade; demissão em EP e SEM motivada, sem PAD; exige concurso e veda acumulação.", "t": "Mandar a fase de concurso de celetistas à Justiça do Trabalho."}, {"id": "6-12", "q": "Quais os requisitos de ingresso e o que o edital pode fazer?", "a": "Condições e limitações devem estar previstas em lei antes e só então constar do edital. Exigências de idade, sexo ou altura só valem se a natureza do cargo justificar, razoáveis e com amparo legal. Editais não podem restringir tatuagens, salvo conteúdo que viole valores constitucionais.", "t": "Criar restrição só no edital."}, {"id": "6-13", "q": "Quando se comprovam os requisitos do cargo?", "a": "Regra: na posse (Súmula 266 do STJ). Exceções, na inscrição: idade máxima e a atividade jurídica de 3 anos (Magistratura e MP) ou 2 anos (DPU, AGU etc.), seguindo a regra mais favorável ao candidato.", "t": "Exigir a comprovação na inscrição como regra."}, {"id": "6-14", "q": "Quem pode ser estrangeiro ou exige brasileiro nato?", "a": "Estrangeiros: acesso na forma da lei (eficácia limitada); universidades podem admitir professores e cientistas estrangeiros. Privativos de natos: Presidente, Vice, Presidentes da Câmara e do Senado, Ministros do STF (todos), carreira diplomática, oficiais das Forças Armadas e Ministro da Defesa (apenas este entre os ministros de Estado).", "t": "Exigir brasileiro nato de todos os ministros de Estado."}, {"id": "6-15", "q": "Como deve ser composto o concurso e qual o papel da prova de títulos?", "a": "Obrigatoriamente de provas ou de provas e títulos; não se admite seleção só por títulos ou análise curricular. A prova de títulos é exclusivamente classificatória; seu uso eliminatório é inconstitucional. Curso de formação pode ser segunda etapa, eliminatória e classificatória.", "t": "Admitir eliminação por nota mínima na prova de títulos."}, {"id": "6-16", "q": "Quais as condições do exame psicotécnico (SV 44)?", "a": "Exige, cumulativamente: previsão em lei e no edital, compatibilidade com o cargo, critérios objetivos (rigor científico) e possibilidade de recurso.", "t": "Dizer que basta a previsão no edital."}, {"id": "6-17", "q": "O que é inconstitucional em provimento de cargos?", "a": "Servidor se investir em cargo diferente do aprovado (sobe de nível médio para superior por prova interna); converter cargo temporário em permanente; passar de CLT para estatutário mediante extinção de estatal.", "t": "Admitir ascensão e transferência."}, {"id": "6-18", "q": "Qual o prazo de validade do concurso e a regra de prorrogação?", "a": "Até 2 anos, contados da homologação (pode ser menor). Prorrogável uma única vez, obrigatoriamente por igual período ao fixado inicialmente, por ato discricionário. A Administração escolhe o momento da nomeação dentro da validade.", "t": "Admitir várias prorrogações ou prazo obrigatório de 2 anos."}, {"id": "6-19", "q": "A nomeação sem concurso pode ser anulada após 5 anos?", "a": "Sim, a qualquer tempo: é inconstitucionalidade flagrante e não se sujeita ao prazo decadencial de 5 anos.", "t": "Aplicar decadência quinquenal."}, {"id": "6-21", "q": "Quais as hipóteses de direito subjetivo à nomeação?", "a": "(1) Aprovação dentro do número de vagas do edital; (2) preterição na ordem de classificação (Súmula 15 do STF); (3) surgimento de novas vagas + preterição arbitrária (ex.: temporário ilegal em vaga com aprovado em cadastro de reserva); (4) candidato que passa a figurar nas vagas após desistência de classificados superiores.", "t": "Dizer que o aprovado dentro das vagas tem só expectativa."}, {"id": "6-22", "q": "Qual a tese do Tema 784 (RE 837.311) para o cadastro de reserva?", "a": "Aprovados fora das vagas têm, em regra, mera expectativa. Novas vagas ou novo concurso durante a validade não geram direito automaticamente. Exceção: preterição arbitrária e imotivada, provada por caminhos independentes: (1) temporários ou terceirizados nas mesmas atribuições (salvo urgência) ou (2) novo concurso com nomeações efetivas durante a validade do anterior.", "t": "Reconhecer direito do cadastro de reserva pela mera abertura de edital."}, {"id": "6-23", "q": "O que não configura preterição e quem prova?", "a": "Mera abertura de edital sem nomeações, alegação genérica de necessidade do serviço, justificativa orçamentária fundamentada, concurso para cargo, nível ou lotação diferente, provimento por remoção ou redistribuição regular. O ônus é do candidato; o direito só existe se o fato ocorrer dentro da validade do concurso.", "t": "Reconhecer preterição após a validade."}, {"id": "6-24", "q": "O limite prudencial da LRF afasta o direito à nomeação?", "a": "Não, por si só (limite prudencial de 95% do limite de despesa de pessoal). A Administração deve fazer estudo orçamentário antes do edital. O Estado só recusa a nomeação com justificativa superveniente, imprevisível, grave e necessária, como última opção.", "t": "Aceitar o limite da LRF como justificativa suficiente."}, {"id": "6-25", "q": "O candidato nomeado tardiamente por decisão judicial tem direito a indenização (Tema 671)?", "a": "Não, em regra: não há indenização pelo período em que não exerceu o cargo, salvo arbitrariedade flagrante e objetivamente comprovada. Só posse e exercício geram os benefícios do cargo, e não há efeitos previdenciários retroativos sem contribuição.", "t": "Conceder indenização pelo atraso como regra."}, {"id": "6-26", "q": "Como funcionam as cotas de PcD?", "a": "A lei deve reservar percentual: mínimo de 5% e máximo de 20%, qualquer ente (que pode ter lei própria); arredonda-se desde que não ultrapasse o máximo. Visão monocular dá direito (Súmula 377 do STJ). É possível eliminar se a deficiência for incompatível com o cargo, caso a caso.", "t": "Fixar percentual fora de 5% a 20%."}, {"id": "6-28", "q": "O que o Judiciário pode controlar em concursos?", "a": "Não substitui a banca, mas faz juízo de compatibilidade do conteúdo das questões com o edital e controla ilegalidade e inconstitucionalidade: descumprimento do edital, cobrança de conteúdo não previsto e desrespeito a precedentes obrigatórios. Condenado criminalmente com trânsito em julgado pode tomar posse se compatível com a pena (STJ), com exercício conforme o regime da pena.", "t": "Dizer que o Judiciário reavalia notas."}, {"id": "6-29", "q": "Quais as exceções à exigência de concurso?", "a": "Cargos em comissão (direção, chefia e assessoramento); contratações temporárias (art. 37, IX); agentes comunitários de saúde e de combate a endemias (processo seletivo público); entidades fora da Administração (Sistema S, Organizações Sociais, OAB).", "t": "Confundir processo seletivo simplificado com processo seletivo público."}, {"id": "6-30", "q": "Diferencie cargo em comissão e função de confiança.", "a": "Ambos só para direção, chefia e assessoramento. Função de confiança: exclusiva de servidor efetivo; designação e dispensa. Cargo em comissão: livre nomeação e exoneração (ad nutum), sem processo administrativo, contraditório ou motivação; servidor estatutário sem estabilidade, no RGPS; pode ser de particular, com percentual mínimo para servidores de carreira.", "t": "Dizer que o ocupante de cargo em comissão tem estabilidade."}, {"id": "6-31", "q": "Qual a diferença entre exoneração, demissão e destituição e como fica a gestante?", "a": "Exoneração: sem caráter sancionatório (a pedido, inabilitação em estágio probatório, não entrar em exercício no prazo). Demissão: sanção. Destituição: equivale à demissão para comissionados. Gestante (inclusive comissionada, efetiva, empregada ou temporária): estabilidade provisória da confirmação da gravidez até 5 meses após o parto, com indenização se exonerada.", "t": "Tratar exoneração como sanção."}, {"id": "6-32", "q": "Quais os requisitos do STF para criar cargos em comissão (RE 1.041.210)?", "a": "Atribuições claras na lei, relação de confiança, proporcionalidade com o número de efetivos, e vedação para funções técnicas ou operacionais.", "t": "Criar comissionado para função técnica."}, {"id": "6-33", "q": "O que veda a Súmula Vinculante 13 (nepotismo)?", "a": "Nomear cônjuge, companheiro ou parente até 3º grau (colateral ou por afinidade) da autoridade nomeante ou de servidor com cargo de direção na mesma pessoa jurídica; inclui o nepotismo cruzado, que exige potencial de interferir na seleção (hierarquia). Gera improbidade. Não se aplica automaticamente a ministros e secretários (cargos políticos), salvo fraude, falta de qualificação ou inidoneidade moral.", "t": "Aplicar a vedação de forma absoluta a cargos políticos."}, {"id": "6-34", "q": "Julgue: o nepotismo impede o filho de uma autoridade de tomar posse em cargo efetivo na mesma entidade.", "a": "ERRADO. A vedação alcança só cargos em comissão e funções de confiança; o acesso por concurso é legítimo.", "t": "Estender a SV 13 a cargos efetivos."}], "8": [{"id": "8-1", "q": "A quem se aplica a Lei 8.112/1990?", "a": "Aos servidores da União, na Administração direta, autarquias e fundações públicas de direito público. Não alcança empregados de EP e SEM (CLT). O vínculo é estatutário: de natureza legal, não contratual. Servidor é quem é legalmente investido em cargo público; cargo é o conjunto de atribuições criado por lei, com denominação própria e vencimento pago pelos cofres públicos.", "t": "Aplicar a lei a empregados de empresas estatais."}, {"id": "8-2", "q": "Quais os requisitos básicos de investidura (art. 5º)?", "a": "Nacionalidade brasileira; gozo dos direitos políticos; quitação com obrigações militares e eleitorais; nível de escolaridade exigido; idade mínima de 18 anos; aptidão física e mental. Estrangeiros: norma de eficácia limitada (hoje, universidades e instituições de pesquisa federais). PcD: reserva de até 20% das vagas.", "t": "Fixar idade mínima de 21 anos."}, {"id": "8-3", "q": "Quais as súmulas citadas sobre limite de idade e psicotécnico?", "a": "Súmula 14 do STF: é inconstitucional limitar a idade por mero ato administrativo (exige lei). Súmula Vinculante 44: o exame psicotécnico exige previsão em lei.", "t": "Admitir limite de idade só no edital."}, {"id": "8-4", "q": "Quais as três etapas do ingresso e seus prazos (N-P-E, 30-15)?", "a": "Nomeação → posse (prazo improrrogável de 30 dias da publicação do ato) → exercício (prazo improrrogável de 15 dias da posse). Nomeação é ato unilateral e a única forma de provimento originário (efetivo exige concurso; comissão é de livre nomeação).", "t": "Trocar os prazos de 30 e 15 dias."}, {"id": "8-5", "q": "Qual o efeito de perder o prazo da posse e o do exercício?", "a": "Posse: nomeação tornada sem efeito (não há exoneração, pois o vínculo não existia). Exercício: o servidor empossado é exonerado. Função de confiança: o exercício coincide com a publicação da designação; se não assumir, o ato é tornado sem efeito.", "t": "Exonerar quem não tomou posse."}, {"id": "8-6", "q": "Como é a posse?", "a": "Aceitação formal das atribuições, deveres e responsabilidades. Exige inspeção médica oficial (obrigatória), declaração de bens e declaração de não acumulação ilegal. Pode ser feita por procuração específica.", "t": "Dispensar a inspeção médica."}, {"id": "8-7", "q": "Qual a jornada e como funciona a dedicação integral?", "a": "6 a 8 horas diárias, máximo de 40 horas semanais (ressalvadas leis específicas). Comissionados e funções de confiança têm dedicação integral, com disponibilidade para convocação. Quem acumula dois cargos efetivos e é nomeado para comissão afasta-se de ambos, salvo compatibilidade de horário e local com um deles, declarada pelas autoridades máximas. É vedado o serviço gratuito, salvo previsão em lei.", "t": "Dizer que a jornada máxima é de 44 horas."}, {"id": "8-8", "q": "Quais são as sete formas de provimento da Lei 8.112 e o que a SV 43 diz?", "a": "Nomeação (única originária), promoção, readaptação, reversão, aproveitamento, reintegração e recondução. Ascensão e transferência foram revogadas e declaradas inconstitucionais (SV 43).", "t": "Incluir a transferência como forma de provimento."}, {"id": "8-9", "q": "Como funcionam promoção e readaptação?", "a": "Promoção: provimento derivado vertical por antiguidade e merecimento; não interrompe o tempo de serviço; é ao mesmo tempo provimento e vacância. Readaptação: investidura em cargo com atribuições compatíveis com limitação física ou mental atestada em inspeção médica, exigindo atribuições afins, mesma habilitação e escolaridade e equivalência de vencimentos; sem vaga, o servidor fica excedente; se totalmente incapaz, aposenta-se.", "t": "Rebaixar vencimento na readaptação."}, {"id": "8-10", "q": "Quais as espécies de reversão?", "a": "De ofício (invalidez): quando a junta médica declara que cessaram os motivos da aposentadoria por invalidez. A pedido (interesse da Administração, discricionária): servidor que se aposentou voluntariamente, estável na atividade, aposentado há no máximo 5 anos, com cargo vago. Vedada a quem completou 70 anos. Se o cargo estiver provido, atua como excedente.", "t": "Admitir reversão após 70 anos."}, {"id": "8-11", "q": "Como funciona o aproveitamento?", "a": "Retorno obrigatório do estável em disponibilidade (remuneração proporcional ao tempo de serviço) após a extinção ou desnecessidade do cargo, em cargo de atribuições e vencimentos compatíveis. Se não assumir no prazo, o aproveitamento é tornado sem efeito e a disponibilidade é cassada.", "t": "Aproveitar servidor não estável."}, {"id": "8-12", "q": "Como funciona a reintegração?", "a": "Reinvestidura do estável no cargo de origem quando a demissão é invalidada administrativa ou judicialmente, com ressarcimento de todas as vantagens. Se o cargo estiver provido, o atual ocupante estável é reconduzido sem indenização, aproveitado em outro ou posto em disponibilidade; se o cargo foi extinto, o reintegrado fica em disponibilidade.", "t": "Indenizar o ocupante reconduzido."}, {"id": "8-13", "q": "Como funciona a recondução na Lei 8.112?", "a": "Retorno do estável ao cargo anteriormente ocupado, só por (1) inabilitação ou desistência em estágio probatório de outro cargo ou (2) reintegração do anterior ocupante. Exige estabilidade no cargo de origem; se estiver ocupado, será aproveitado em outro.", "t": "Admitir recondução de quem não era estável."}, {"id": "8-14", "q": "Qual a duração do estágio probatório na prática e quais os fatores de avaliação (RAPID)?", "a": "A lei menciona 24 meses, mas STF e STJ firmaram 36 meses, acompanhando a estabilidade. Fatores: Responsabilidade, Assiduidade, Produtividade, Iniciativa e Disciplina. Estabilidade: 3 anos de efetivo exercício + avaliação especial por comissão.", "t": "Aplicar 24 meses ao estágio."}, {"id": "8-15", "q": "Que cargos o servidor em estágio pode ocupar e quando o estágio se suspende?", "a": "Pode exercer cargo em comissão ou função de chefia ou assessoramento no órgão de lotação; para ser cedido a outro órgão, só cargos de Natureza Especial ou DAS 4, 5 e 6 ou equivalentes. O estágio fica suspenso nas licenças por doença em pessoa da família, afastamento do cônjuge, atividade política, serviço em organismo internacional e curso de formação.", "t": "Ceder o servidor em estágio para qualquer cargo."}, {"id": "8-16", "q": "Quais são as hipóteses de vacância (art. 33)?", "a": "Exoneração, demissão, promoção, readaptação, aposentadoria, posse em outro cargo inacumulável e falecimento. Promoção e readaptação geram provimento e vacância simultaneamente.", "t": "Incluir a remoção entre as hipóteses."}, {"id": "8-17", "q": "Quando a exoneração é de ofício?", "a": "Inabilitação no estágio probatório; não início do exercício no prazo de 15 dias; insuficiência de desempenho na avaliação periódica; limites de gastos de pessoal da LRF; livre exoneração de comissionados. A exoneração não tem caráter punitivo; também pode ser a pedido.", "t": "Tratar exoneração como punição."}, {"id": "8-18", "q": "Quais as modalidades de remoção (art. 36)?", "a": "De ofício (interesse da Administração; mudança permanente de domicílio gera ajuda de custo); a pedido, a critério da Administração (discricionária); a pedido, direito subjetivo (vinculada): acompanhamento de cônjuge ou companheiro deslocado de ofício, motivo de saúde (própria, do cônjuge, companheiro ou dependente, com junta médica oficial) e processo seletivo (concurso de remoção).", "t": "Considerar discricionária a remoção por saúde comprovada."}, {"id": "8-19", "q": "O que é redistribuição (art. 37) e a quem se aplica?", "a": "Deslocamento do cargo (ocupado ou vago) para outro órgão ou entidade do mesmo Poder, sempre de ofício e no interesse da Administração, com equivalência de vencimentos, essência das atribuições e mesmo nível de escolaridade. Independe de estabilidade: servidor em estágio probatório pode ser redistribuído com o cargo.", "t": "Redistribuir cargo para outro Poder."}, {"id": "8-20", "q": "Diferencie remoção e redistribuição.", "a": "Remoção: desloca o servidor dentro do mesmo quadro, com ou sem mudança de sede. Redistribuição: desloca o cargo para outro órgão do mesmo Poder, sempre de ofício. Nenhuma é forma de provimento ou vacância.", "t": "Tratar como provimento ou vacância."}, {"id": "8-21", "q": "Julgue: o servidor nomeado que não toma posse em 30 dias é exonerado.", "a": "ERRADO. A nomeação é tornada sem efeito, pois o vínculo não chegou a se formar. A exoneração ocorre quando o empossado não entra em exercício em 15 dias.", "t": "Aplicar exoneração à perda do prazo da posse."}], "1": [{"id": "1-1", "q": "Qual é o binômio do regime jurídico administrativo e o que ele significa?", "a": "Prerrogativas e sujeições. A Administração fica em posição de verticalidade perante o particular para atingir o benefício da coletividade (no direito privado, as relações são horizontais). Pilar 1: supremacia do interesse público (prerrogativas, como alterar contratos unilateralmente e o poder de polícia). Pilar 2: indisponibilidade do interesse público (sujeições, como licitação e concurso).", "t": "Atribuir à Administração relações de igualdade com o particular."}, {"id": "1-2", "q": "Em que consiste a supremacia do interesse público e qual o limite dela?", "a": "Em conflito entre o interesse do particular e o da coletividade, o público predomina. Fundamenta cláusulas exorbitantes, poder de polícia e desapropriação. Não é absoluta: não se aplica quando a Administração age como Estado-empresário (atividade econômica) nem em contratos de locação e seguro.", "t": "Tratar a supremacia como absoluta."}, {"id": "1-3", "q": "O que é a indisponibilidade do interesse público?", "a": "Representa as sujeições: o administrador é gestor, não dono do interesse público, e não dispõe dele conforme sua vontade. Presente em qualquer atuação da Administração; fundamenta a obrigatoriedade de licitação e de concurso público.", "t": "Confundir com as prerrogativas (que decorrem da supremacia)."}, {"id": "1-4", "q": "Quais são os princípios expressos do art. 37 da CF e existe hierarquia entre eles?", "a": "LIMPE: Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência. Não há hierarquia entre os princípios; havendo conflito, aplica-se a ponderação.", "t": "Dizer que a legalidade sobrepõe os demais princípios."}, {"id": "1-5", "q": "Como a legalidade se aplica à Administração e ao particular?", "a": "Administração: estrita legalidade (só faz o que a lei autoriza ou determina). Administrados: autonomia da vontade (podem fazer tudo o que a lei não proíbe).", "t": "Aplicar à Administração a lógica do particular."}, {"id": "1-6", "q": "O que a impessoalidade veda e garante?", "a": "Veda a promoção pessoal (nomes e símbolos de autoridades em obras). Garante a isonomia e fundamenta a validade dos atos de agentes de fato.", "t": "Esquecer o fundamento da validade dos atos de agentes de fato."}, {"id": "1-7", "q": "Como a moralidade se relaciona com o nepotismo (SV 13)?", "a": "Moralidade exige ética e boa-fé objetiva. A vedação ao nepotismo decorre diretamente da CF (Súmula Vinculante 13), sem necessidade de lei específica; a exceção são os cargos de natureza política. Não se precisa aferir a intenção do agente.", "t": "Exigir lei específica ou prova de intenção para configurar o nepotismo."}, {"id": "1-8", "q": "A publicidade é requisito de validade ou de eficácia do ato?", "a": "De eficácia (exigência de publicação em órgão oficial). Transparência é a regra; sigilo é a exceção (segurança nacional ou intimidade, como dados pessoais).", "t": "Chamar a publicidade de requisito de validade."}, {"id": "1-9", "q": "O que exige o princípio da eficiência?", "a": "Foco em resultados, qualidade e produtividade, prestando serviços públicos de qualidade ao menor custo possível e no menor tempo.", "t": "Reduzir a eficiência a economia de custos."}, {"id": "1-10", "q": "O que é autotutela e qual seu fundamento?", "a": "Poder-dever da Administração de controlar os próprios atos: anular os ilegais e revogar os inconvenientes ou inoportunos (mérito). Fundamento: Súmulas 346 e 473 do STF.", "t": "Dizer que é mera faculdade da Administração."}, {"id": "1-11", "q": "Julgue: a autotutela permite que o Judiciário atue de ofício e revogue atos da Administração.", "a": "ERRADO. A autotutela é da Administração. O Judiciário só age se provocado (inafastabilidade) e nunca revoga ato da Administração, pois não controla mérito: apenas anula por ilegalidade.", "t": "Atribuir ao Judiciário a autotutela ou a revogação."}, {"id": "1-12", "q": "Qual o limite temporal para a Administração anular atos favoráveis?", "a": "5 anos (decadência, no âmbito federal) para atos favoráveis a terceiros de boa-fé, salvo comprovada má-fé. Atos flagrantemente inconstitucionais não se submetem a esse prazo, segundo o STF.", "t": "Aplicar o prazo de 5 anos a atos de má-fé ou flagrantemente inconstitucionais."}, {"id": "1-13", "q": "Quais os elementos do trinômio da proporcionalidade?", "a": "Adequação (meio compatível com o fim), necessidade (meio menos gravoso) e proporcionalidade em sentido estrito (vantagens superam as desvantagens). Razoabilidade: critérios aceitáveis do ponto de vista racional. Proporcionalidade: equilíbrio entre meios e fins.", "t": "Trocar necessidade por adequação."}, {"id": "1-14", "q": "Um ato desarrazoado é apenas inconveniente?", "a": "Não. É ilegal, e por isso o Judiciário pode anulá-lo. Isso não é revisão de mérito: a falta de razoabilidade é considerada forma de ilegalidade.", "t": "Dizer que o Judiciário não pode controlar atos desarrazoados."}, {"id": "1-15", "q": "Diferencie segurança jurídica e proteção à confiança.", "a": "Segurança jurídica: aspecto objetivo (estabilidade das relações consolidadas). Proteção à confiança: aspecto subjetivo (boa-fé do administrado). Atos de agentes de fato são válidos perante terceiros de boa-fé. É proibida a aplicação retroativa de nova interpretação, mesmo sob alegação de interesse público.", "t": "Admitir aplicação retroativa de nova interpretação por interesse público."}, {"id": "1-16", "q": "O que é o princípio da continuidade e quais suas consequências?", "a": "O serviço público não deve parar. Consequências: limitação ao direito de greve (proibido para militares e policiais), impossibilidade de o particular invocar de imediato a “exceção do contrato não cumprido” e os institutos de suplência e delegação.", "t": "Dizer que o particular pode suspender o contrato por inadimplência do Estado."}, {"id": "1-17", "q": "Julgue: a continuidade do serviço público é absoluta.", "a": "ERRADO. O serviço pode ser interrompido em emergência ou, após aviso prévio, por razões de ordem técnica ou segurança, ou por inadimplemento do usuário.", "t": "Ignorar as hipóteses de interrupção."}, {"id": "1-18", "q": "O que são especialidade e tutela?", "a": "Especialidade: as entidades da Administração Indireta atuam estritamente dentro da finalidade prevista na lei que as criou. Tutela (controle finalístico): controle da Direta sobre a Indireta para garantir a especialidade. Não há subordinação, apenas vinculação.", "t": "Falar em hierarquia entre Direta e Indireta."}, {"id": "1-19", "q": "O que é o dever de motivação e qual sua exceção clássica?", "a": "Dever de indicar os fundamentos de fato e de direito das decisões. Exceção clássica: exoneração ad nutum de cargo em comissão.", "t": "Dizer que a motivação nunca é exigível."}, {"id": "1-20", "q": "Como funciona a presunção de legitimidade e veracidade?", "a": "O ato presume-se verdadeiro e conforme a lei até prova em contrário (presunção relativa, juris tantum), com inversão do ônus da prova para o particular.", "t": "Tratar a presunção como absoluta."}, {"id": "1-21", "q": "Qual a diferença entre contraditório e ampla defesa e o que diz a SV 5?", "a": "Contraditório: direito de tomar conhecimento e se contrapor. Ampla defesa: direito de alegar e provar, com todos os meios e recursos válidos. Obrigatórios em processos com acusados ou litigantes. SV 5: a falta de defesa técnica por advogado no PAD não ofende a Constituição.", "t": "Exigir advogado obrigatório no PAD."}, {"id": "1-22", "q": "Diferencie entidades e órgãos públicos.", "a": "Entidades: pessoas jurídicas. Políticas (União, Estados, DF e Municípios) têm autonomia política e capacidade legislativa; administrativas (Administração Indireta) têm só autoadministração. Órgãos: centros de competência sem personalidade, cujos atos são imputados à pessoa jurídica a que pertencem.", "t": "Atribuir personalidade jurídica a órgãos."}, {"id": "1-23", "q": "Julgue: órgãos públicos possuem personalidade jurídica própria.", "a": "ERRADO. São “partes de um todo”. Exceção de capacidade processual: órgãos de estatura constitucional (Presidência, TCU, Ministério Público) podem ir a juízo exclusivamente para defender prerrogativas institucionais, sem ter personalidade.", "t": "Confundir capacidade processual com personalidade."}, {"id": "1-24", "q": "Diferencie desconcentração e descentralização.", "a": "Desconcentração: cria órgãos, dentro da mesma pessoa jurídica, com hierarquia; ocorre em todos os Poderes e esferas. Descentralização: cria outra pessoa (entidade), envolve duas pessoas jurídicas, sem hierarquia, apenas vinculação (tutela).", "t": "Dizer que a desconcentração cria nova pessoa jurídica ou rompe a hierarquia."}, {"id": "1-25", "q": "Quais são as formas de descentralização administrativa?", "a": "Por outorga (serviços/técnica): o Estado cria entidade da Administração Indireta e transfere titularidade e execução; exige lei. Por delegação (colaboração): transfere só a execução a particulares, por contrato ou ato administrativo. Territorial/geográfica: territórios federais (hoje inexistentes).", "t": "Dizer que a delegação transfere a titularidade."}, {"id": "1-26", "q": "Existe hierarquia entre os Ministérios e o INSS ou a Petrobras?", "a": "Não. Há vinculação, tutela administrativa ou controle finalístico (supervisão ministerial). Hierarquia é fenômeno interno da mesma pessoa jurídica, e também não existe entre os Poderes.", "t": "Afirmar subordinação entre Administração Direta e Indireta."}]};
+
+const mc=(q,o,e)=>({t:'mc',q,o,a:0,e});
+const tf=(q,v,e)=>({t:'tf',q,o:['Certo','Errado'],a:v?0:1,e});
+const mt=(q,pairs,e)=>({t:'match',q,pairs,e});
+// Desafios: mc = a primeira opção é a correta (o jogo embaralha).
+const QUIZ={
+1:[
+ tf('A Administração só pode fazer o que a lei autoriza ou determina, enquanto o particular pode fazer tudo o que a lei não proíbe.',true,'Administração: estrita legalidade. Particular: autonomia da vontade.'),
+ mc('A supremacia do interesse público NÃO se aplica de forma plena quando:',['A Administração atua como Estado-empresário, explorando atividade econômica','A Administração exerce o poder de polícia','A Administração promove uma desapropriação','O contrato prevê cláusula exorbitante'],'A supremacia não é absoluta: não vale para o Estado-empresário nem para contratos de locação e seguro. Poder de polícia, desapropriação e cláusulas exorbitantes são expressões dela.'),
+ tf('A publicidade é requisito de validade do ato administrativo.',false,'É requisito de eficácia, pela exigência de publicação em órgão oficial.'),
+ mc('Segundo a Súmula Vinculante 5, a falta de defesa técnica por advogado em processo administrativo disciplinar:',['Não ofende a Constituição','Gera nulidade absoluta do processo','Obriga a nomear defensor dativo','Viola a ampla defesa se houver demissão'],'A SV 5 afasta a obrigatoriedade de advogado no PAD.'),
+ mt('Ligue cada conceito ao que ele significa.',[['Desconcentração','Cria órgãos na mesma pessoa jurídica, com hierarquia'],['Descentralização','Cria outra pessoa, com vinculação e sem hierarquia'],['Outorga','Transfere titularidade e execução, por lei'],['Delegação','Transfere só a execução, por contrato ou ato']],'Delegação não transfere a titularidade. Desconcentração mantém a hierarquia.'),
+ tf('Há hierarquia entre o Ministério e uma autarquia ou estatal vinculada a ele.',false,'Entre a Direta e a Indireta há vinculação e tutela (controle finalístico), nunca hierarquia.'),
+ mc('Qual elemento do trinômio da proporcionalidade exige o meio menos gravoso?',['Necessidade','Adequação','Proporcionalidade em sentido estrito','Razoabilidade'],'Adequação: meio compatível com o fim. Necessidade: meio menos gravoso. Sentido estrito: as vantagens superam as desvantagens.')
+],
+2:[
+ mc('Qual entidade da Administração Indireta é criada diretamente por lei específica?',['Autarquia','Empresa pública','Sociedade de economia mista','Fundação de direito privado'],'Autarquias nascem da lei. EP, SEM e fundações de direito privado têm a criação apenas autorizada por lei e nascem com o registro dos atos constitutivos.'),
+ tf('Empresas públicas e sociedades de economia mista podem falir, porque são pessoas jurídicas de direito privado.',false,'Nenhuma estatal se sujeita à falência. Se não conseguir pagar, o ente instituidor responde de forma subsidiária.'),
+ mc('As causas em que é parte uma sociedade de economia mista federal, como o Banco do Brasil, são julgadas pela:',['Justiça Estadual','Justiça Federal','Justiça do Trabalho, sempre','Supremo Tribunal Federal, sempre'],'SEM federal: Justiça Estadual. EP federal, como a Caixa: Justiça Federal (Súmulas 508 do STF e 42 do STJ).'),
+ mt('Ligue cada característica à entidade.',[['Empresa pública','Capital 100% público'],['Sociedade de economia mista','Obrigatoriamente sociedade anônima'],['Autarquia','Criada por lei específica, sem registro em cartório'],['Fundação privada','Nasce da iniciativa de particulares']],'Fundação instituída por particular não é fundação pública.'),
+ tf('O Presidente da República pode exonerar livremente os dirigentes de agência reguladora federal.',false,'Eles têm mandato fixo (5 anos, sem recondução) e só perdem o cargo por renúncia, condenação transitada em julgado ou PAD.'),
+ mc('Segundo o STF, a OAB é:',['Entidade de direito privado, fora da Administração','Autarquia corporativa','Autarquia em regime especial','Empresa pública'],'Diferente dos conselhos profissionais (autarquias corporativas), a OAB não presta contas ao TCU, não licita e não faz concurso.'),
+ tf('Para dispensar empregado público concursado de empresa estatal, é indispensável instaurar processo administrativo disciplinar.',false,'A demissão deve ser motivada, com fundamento razoável, mas sem PAD nem contraditório. Não há estabilidade pelo art. 41.')
+],
+3:[
+ mc('O que NÃO pode ser delegado (CENORA)?',['A decisão de recursos administrativos','Atos de mero expediente','Execução de tarefas técnicas','Atos de gestão de rotina'],'CENORA: Competência exclusiva, atos Normativos e Recursos administrativos.'),
+ tf('A avocação exige relação hierárquica e é medida excepcional e temporária.',true,'Só com hierarquia, por motivos relevantes e justificados. A delegação pode ocorrer sem hierarquia.'),
+ tf('O decreto regulamentar pode inovar originalmente na ordem jurídica.',false,'Ele complementa a lei para permitir sua aplicação. As exceções são o decreto autônomo (hipóteses restritas) e o regulamento autorizado.'),
+ mc('Qual é a ordem das fases do ciclo de polícia?',['Ordem, consentimento, fiscalização, sanção','Consentimento, ordem, sanção, fiscalização','Fiscalização, ordem, consentimento, sanção','Ordem, fiscalização, consentimento, sanção'],'Ordem (legislação), consentimento (licenças e autorizações), fiscalização e sanção. A fase de ordem é indelegável.'),
+ tf('O poder de polícia pode ser delegado a particulares.',false,'Só atividades materiais de apoio podem ser terceirizadas. Fases do poder de polícia só se delegam a entidades de direito público e, segundo o STF, a estatais que prestem serviço público exclusivo, por lei.'),
+ mt('Ligue cada poder ou vício à sua descrição.',[['Excesso de poder','Vício de competência: o agente extrapola seus limites'],['Desvio de finalidade','Agente competente busca fim diverso do previsto'],['Poder disciplinar','Pune servidores e particulares com vínculo específico'],['Poder de polícia','Restringe direitos e atividades de todos, em prol do interesse público']],'Excesso e desvio juntos formam o abuso de poder.')
+],
+4:[
+ mc('Quais elementos do ato administrativo são sempre vinculados?',['Competência, finalidade e forma','Motivo e objeto','Competência e motivo','Finalidade e objeto'],'O mérito (conveniência e oportunidade) só incide em motivo e objeto, quando discricionários.'),
+ tf('A anulação produz efeitos ex tunc e a revogação, ex nunc.',true,'Anulação: ilegalidade, pela Administração ou pelo Judiciário. Revogação: mérito, só pela Administração.'),
+ mc('O desvio de finalidade é um vício:',['Insanável','Sanável por convalidação','De competência','De forma'],'Finalidade, motivo e objeto são, em regra, insanáveis. Só forma (não essencial) e competência (não exclusiva nem em razão da matéria) podem ser convalidadas.'),
+ mt('Ligue cada ato à sua característica.',[['Licença','Vinculada e definitiva'],['Autorização','Discricionária e precária, interesse predominante do particular'],['Permissão','Discricionária e precária, interesse predominantemente público'],['CAPA','Atos enunciativos: certidão, atestado, parecer e apostila']],'Licença não é discricionária nem livremente revogável.'),
+ tf('Imperatividade e autoexecutoriedade estão presentes em todos os atos administrativos.',false,'Só a presunção de legitimidade e a tipicidade são universais. Autoexecutoriedade e imperatividade existem apenas em alguns atos.'),
+ mc('A teoria dos motivos determinantes estabelece que:',['A validade do ato fica vinculada à veracidade dos motivos expostos','O motivo pode ser trocado depois da edição do ato','Atos vinculados dispensam motivo','Só vale para atos discricionários'],'Vale para atos vinculados e discricionários e alcança até a exoneração ad nutum, quando motivada.'),
+ mc('O prazo de 5 anos para a Administração federal anular atos favoráveis não se aplica a:',['Atos praticados com comprovada má-fé','Atos favoráveis a destinatários de boa-fé','Atos que concedem vantagem a servidor de boa-fé','Atos discricionários em geral'],'O prazo protege destinatários de boa-fé. Má-fé e atos flagrantemente inconstitucionais ficam de fora.')
+],
+5:[
+ tf('O Brasil adota a escola formalista: é serviço público a atividade que o ordenamento determina prestar sob regime de direito público.',true,'A escola subjetivista (pelo sujeito que presta) não é adotada, pois particulares prestam serviço público por delegação.'),
+ tf('Na concessão, o Estado transfere ao concessionário a titularidade do serviço público.',false,'Transfere só a execução. Titularidade e dever de regulamentar e fiscalizar permanecem com o Estado.'),
+ mt('Ligue cada forma de delegação à sua característica.',[['Concessão','Contrato administrativo; concorrência ou diálogo competitivo'],['Permissão','Contrato de adesão, precário; licitação em qualquer modalidade'],['Autorização','Ato unilateral, discricionário e precário; sem licitação'],['PPP administrativa','O Estado é o usuário e paga o prestador']],'A autorização não exige licitação nem lei autorizativa prévia.'),
+ mc('Quando há inexecução do serviço por culpa da concessionária, a concessão se extingue por:',['Caducidade','Encampação','Rescisão','Anulação'],'Encampação: interesse público, com lei autorizativa e indenização prévia. Rescisão: iniciativa da concessionária.'),
+ mc('A rescisão da concessão por inadimplência do poder concedente exige:',['Ação judicial movida pela concessionária','Decreto do poder concedente','Apenas aviso prévio de 30 dias','Lei autorizativa específica'],'A rescisão é obrigatoriamente judicial, por iniciativa da concessionária.'),
+ tf('A intervenção na concessão exige processo administrativo instaurado em 30 dias e concluído em até 180 dias, sob pena de invalidade.',true,'A banca costuma trocar os prazos: 30 para instaurar, 180 para concluir.'),
+ tf('Serviços gerais (uti universi) podem ser remunerados por taxa.',false,'Serviços gerais atendem à coletividade, sem uso mensurável por usuário. Só os singulares (uti singuli) são remunerados por taxa ou tarifa.')
+],
+6:[
+ mc('O prazo de validade do concurso público é de:',['Até 2 anos, prorrogável uma única vez por igual período','Até 2 anos, com prorrogações sucessivas','Obrigatoriamente 2 anos, improrrogável','Até 1 ano, prorrogável por 2 anos'],'A prorrogação é discricionária, única e obrigatoriamente por igual período ao fixado inicialmente.'),
+ tf('A prova de títulos pode ter caráter eliminatório.',false,'É exclusivamente classificatória. O uso eliminatório é inconstitucional.'),
+ mc('Segundo o Tema 784 do STF, o aprovado fora das vagas do edital tem, em regra:',['Mera expectativa de direito','Direito subjetivo à nomeação','Direito à indenização','Direito à nomeação em até 1 ano'],'A exceção é a preterição arbitrária e imotivada, provada pelo candidato.'),
+ tf('Pela Súmula Vinculante 13, o filho de uma autoridade não pode tomar posse em cargo efetivo na mesma entidade, mesmo aprovado em concurso.',false,'A vedação alcança cargos em comissão e funções de confiança. O acesso por concurso é legítimo.'),
+ mt('Ligue cada tipo de agente público ao seu perfil.',[['Agentes políticos','Chefes do Executivo, ministros, parlamentares e magistrados'],['Agentes honoríficos','Mesários e jurados: vínculo transitório, em geral sem remuneração'],['Agentes delegados','Concessionários e notários: atuam em nome próprio, por sua conta e risco'],['Agentes putativos','Vício na investidura, mas atos válidos pela aparência de legitimidade']],'Delegados não representam a Administração: executam o serviço por conta e risco.'),
+ mc('Em regra, os requisitos para o cargo são comprovados:',['Na posse (Súmula 266 do STJ)','Na inscrição do concurso','Na homologação do resultado','Na nomeação'],'Exceções, na inscrição: idade máxima e a atividade jurídica exigida em carreiras como Magistratura e MP.'),
+ mc('Qual afirmação sobre o exame psicotécnico (SV 44) está correta?',['Exige previsão em lei e no edital, compatibilidade com o cargo, critérios objetivos e possibilidade de recurso','Basta a previsão no edital','É vedado em qualquer concurso','Dispensa a possibilidade de recurso'],'Os requisitos são cumulativos.')
+],
+7:[
+ mc('O teto remuneratório constitucional é o subsídio:',['Dos Ministros do STF','Do Presidente da República','Do Governador, para todos os Poderes estaduais','Dos Desembargadores do TJ'],'Há subtetos: prefeito nos Municípios e, nos Estados, governador (Executivo), deputados estaduais (Legislativo) e desembargadores (Judiciário).'),
+ tf('Nas acumulações lícitas de cargos, o teto é aferido somando-se as remunerações dos vínculos.',false,'O teto é aferido em cada vínculo, isoladamente.'),
+ mc('Segundo o STF e o STJ, a duração do estágio probatório é de:',['36 meses','24 meses','12 meses','48 meses'],'A Lei 8.112 menciona 24 meses, mas a jurisprudência acompanhou a estabilidade: 3 anos.'),
+ tf('O servidor estável pode perder o cargo por avaliação periódica de desempenho mesmo sem lei complementar regulamentando a hipótese.',false,'A hipótese depende de lei complementar, ainda não editada.'),
+ mt('Ligue cada instituto à sua regra.',[['Estabilidade','Concurso + 3 anos de efetivo exercício + avaliação especial'],['Vitaliciedade','Perda do cargo só por sentença judicial transitada em julgado'],['Contratados temporários','Função pública, vínculo de direito público, Justiça Comum'],['Greve do servidor','Eficácia limitada; na omissão, aplica-se a Lei 7.783/1989']],'Vitalícios não perdem o cargo por PAD.'),
+ mc('Quanto aos dias parados em greve, a regra é:',['A Administração deve descontá-los, sem processo prévio','O desconto é facultativo','O desconto depende de processo administrativo','É vedado descontar'],'Exceção: greve provocada por conduta ilícita do Poder Público, como atraso de salários.'),
+ mc('O ocupante exclusivo de cargo em comissão se vincula ao:',['RGPS','RPPS','Regime próprio de cada ente','Regime de capitalização'],'O RPPS é de titulares de cargo efetivo e vitalícios. A compulsória aos 75 anos também não alcança o cargo exclusivamente comissionado.')
+],
+8:[
+ mc('Quais são os prazos improrrogáveis do ingresso na Lei 8.112?',['Posse: 30 dias da publicação do ato; exercício: 15 dias da posse','Posse: 15 dias; exercício: 30 dias','Posse: 30 dias; exercício: 30 dias','Posse: 60 dias; exercício: 15 dias'],'Mnemônico N-P-E, 30-15: nomeação, posse, exercício.'),
+ tf('O nomeado que não toma posse no prazo é exonerado.',false,'A nomeação é tornada sem efeito, pois o vínculo não chegou a se formar. A exoneração ocorre quando o empossado não entra em exercício em 15 dias.'),
+ mt('Ligue cada forma de provimento à sua descrição.',[['Reintegração','Retorno do estável ao cargo após demissão invalidada'],['Recondução','Retorno ao cargo anterior por inabilitação em outro estágio ou reintegração do ocupante'],['Aproveitamento','Retorno obrigatório do estável em disponibilidade'],['Reversão','Retorno do aposentado, de ofício ou a pedido']],'Só o estável é reintegrado, reconduzido ou aproveitado.'),
+ mc('Qual das opções é forma de provimento prevista na Lei 8.112 depois da SV 43?',['Recondução','Transferência','Ascensão','Remoção'],'Ascensão e transferência foram declaradas inconstitucionais. Remoção não é provimento nem vacância.'),
+ tf('A remoção por motivo de saúde, com laudo de junta médica oficial, é ato discricionário da Administração.',false,'É direito subjetivo (vinculada), assim como o acompanhamento de cônjuge deslocado de ofício e o concurso de remoção.'),
+ mc('A redistribuição é o deslocamento:',['Do cargo, para outro órgão do mesmo Poder, sempre de ofício','Do servidor, a pedido, para outro Poder','Do servidor, dentro do mesmo quadro, sempre a pedido','Do estável, para a disponibilidade'],'A remoção desloca o servidor dentro do mesmo quadro. Nenhuma das duas é provimento ou vacância.'),
+ mc('A jornada máxima semanal prevista na Lei 8.112 é de:',['40 horas','44 horas','36 horas','30 horas'],'A pegadinha clássica é 44 horas. Na Lei 8.112 o limite é de 40 horas semanais (6 a 8 horas diárias).')
+]};
+
+const BOSS={
+ title:'Nomeação, nepotismo e temporários',
+ prompt:'Uma autarquia federal abriu concurso para analista, com 10 vagas e cadastro de reserva, válido por 2 anos. Os 10 aprovados foram nomeados. No 18º mês, a autarquia contratou temporários para as mesmas atribuições, sem demonstrar urgência. O 14º classificado exige sua nomeação. No mesmo período, o diretor nomeou a sobrinha para um cargo em comissão de assessoramento técnico na própria autarquia. Escreva um estudo de caso que (1) analise o direito do candidato, (2) avalie a nomeação da sobrinha e a contratação dos temporários e (3) conclua com as providências cabíveis.',
+ pts:[
+  'Afirma que o aprovado fora das vagas tem, em regra, mera expectativa (Tema 784 do STF).',
+  'Reconhece a exceção: preterição arbitrária e imotivada, provada pelo candidato, por temporários nas mesmas atribuições sem urgência, dentro da validade.',
+  'Condiciona a contratação temporária aos requisitos (lei, prazo determinado, necessidade temporária, interesse público excepcional, indispensabilidade) e veda seu uso para serviço permanente.',
+  'Aplica a Súmula Vinculante 13: parente até 3º grau da autoridade nomeante em cargo em comissão, sem exigir lei específica, com possível improbidade.',
+  'Menciona o controle: autotutela da Administração (anular o ato ilegal) e controle de legalidade pelo Judiciário, que não reavalia o mérito.',
+  'Conclui com recomendação clara: nomear o candidato se provada a preterição, exonerar a nomeada e rever os contratos temporários.'
+ ]
+};
+
+const LEVELS=[{min:0,name:'Concurseiro'},{min:120,name:'Aprovado em cadastro'},{min:350,name:'Dentro das vagas'},{min:700,name:'Nomeado'},{min:1200,name:'Empossado'},{min:1900,name:'Estável'}];
+const GOAL=50;
+const INT=[0,1,3,7,14];
+const MASTER=3;
+
+/* ============ MONTAGEM DAS ETAPAS ============ */
+function chunk(a,max){const n=Math.ceil(a.length/max), out=[]; let i=0; for(let k=0;k<n;k++){const size=Math.ceil((a.length-i)/(n-k)); out.push(a.slice(i,i+size)); i+=size;} return out;}
+const NODES=[];
+UNITS.forEach(u=>{
+  const items=(CARDS[u.n]||[]).map(c=>({id:'c-'+c.id,t:'card',q:c.q,a:c.a,trap:c.t}));
+  chunk(items,7).forEach((p,i)=>NODES.push({id:'u'+u.n+'c'+(i+1),unit:u.n,kind:'cards',label:'Cartas '+(i+1),num:i+1,items:p}));
+  const qz=(QUIZ[u.n]||[]).map((x,i)=>Object.assign({id:'q'+u.n+'_'+i},x));
+  NODES.push({id:'u'+u.n+'t',unit:u.n,kind:'test',label:'Desafio',items:qz});
+});
+NODES.push({id:'boss',unit:0,kind:'boss',label:'Estudo de caso',items:[]});
+const QMAP={}; NODES.forEach(n=>n.items.forEach(q=>{QMAP[q.id]=q;}));
+const ALLCARDS=NODES.filter(n=>n.kind==='cards').flatMap(n=>n.items);
+
+/* ============ ESTADO E PERSISTÊNCIA ============ */
+const LS='mesa-direito-adm-v1';
+const defState=()=>({v:1,updated:0,xp:0,streak:0,lastDay:'',day:'',dayXp:0,done:{},stars:{},cards:{},badges:{},perfect:0,bossBest:0});
+let S=defState();
+try{const raw=localStorage.getItem(LS); if(raw){S=Object.assign(defState(),JSON.parse(raw));}}catch(e){}
+
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>ymd(new Date());
+const yest=()=>{const d=new Date(); d.setDate(d.getDate()-1); return ymd(d);};
+
+let saveTimer=null, saving=false, pending=false, dbDoc=null;
+function persist(){
+  S.updated=Date.now();
+  try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}
+  clearTimeout(saveTimer); saveTimer=setTimeout(flush,700);
+}
+async function flush(){
+  if(!dbDoc) return;
+  if(saving){pending=true; return;}
+  saving=true;
+  try{await dbDoc.set({json:JSON.stringify(S),updated:S.updated});}catch(e){}
+  saving=false;
+  if(pending){pending=false; flush();}
+}
+async function initDb(){
+  try{
+    if(!window.claude||!window.claude.use) return;
+    const db=await window.claude.use('db');
+    const user=await window.claude.use('user');
+    if(!db||!user) return;
+    const uid=await user.id();
+    if(!uid) return;
+    const ref=db.doc('data/users/'+uid+'/progress-da');
+    const snap=await ref.get();
+    if(snap.exists){
+      const r=JSON.parse(snap.data().json);
+      if(r&&r.updated>S.updated){
+        S=Object.assign(defState(),r);
+        try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}
+        if(V.name==='home') render();
+      }
+    }
+    dbDoc=ref;
+    if(S.updated>0) flush();
+  }catch(e){}
+}
+
+/* ============ REGRAS DO JOGO ============ */
+const streakNow=()=>(S.lastDay===today()||S.lastDay===yest())?S.streak:0;
+const dayXpNow=()=>S.day===today()?S.dayXp:0;
+function addXp(n){
+  const t=today();
+  if(S.day!==t){S.day=t; S.dayXp=0;}
+  S.xp+=n; S.dayXp+=n;
+  if(S.lastDay!==t){S.streak=(S.lastDay===yest())?S.streak+1:1; S.lastDay=t;}
+}
+function lvl(){
+  let i=0; for(let k=0;k<LEVELS.length;k++) if(S.xp>=LEVELS[k].min) i=k;
+  const cur=LEVELS[i], nxt=LEVELS[i+1];
+  return {i,cur,nxt,pct:nxt?(S.xp-cur.min)/(nxt.min-cur.min):1};
+}
+const masteredCount=()=>ALLCARDS.filter(c=>(S.cards[c.id]||{}).box>=MASTER).length;
+const BADGES=[
+ {id:'first',name:'Primeira etapa',desc:'Conclua uma etapa',test:()=>NODES.some(n=>n.kind!=='boss'&&S.done[n.id])},
+ {id:'streak3',name:'Fogo de 3 dias',desc:'Estude 3 dias seguidos',test:()=>S.streak>=3},
+ {id:'perfect',name:'Sem errar',desc:'Uma etapa sem nenhum erro',test:()=>S.perfect>=1},
+ {id:'test',name:'Desafiante',desc:'Vença um desafio de tópico',test:()=>NODES.some(n=>n.kind==='test'&&S.done[n.id])},
+ {id:'master',name:'Memória de elefante',desc:'Domine 25 cartas',test:()=>masteredCount()>=25},
+ {id:'boss',name:'Estudo de caso',desc:'4 de 6 pontos no chefão',test:()=>S.bossBest>=4}
+];
+function checkBadges(){
+  const out=[];
+  BADGES.forEach(b=>{ if(!S.badges[b.id]&&b.test()){S.badges[b.id]=true; out.push(b.name);} });
+  return out;
+}
+function cardUpdate(id,ok){
+  const c=S.cards[id]||{box:0,due:0};
+  c.box=ok?Math.min(c.box+1,INT.length-1):0;
+  c.due=Date.now()+INT[c.box]*864e5;
+  S.cards[id]=c;
+}
+const dueIds=()=>Object.keys(S.cards).filter(id=>S.cards[id].due<=Date.now()&&QMAP[id]);
+
+/* ============ UTILIDADES ============ */
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a;};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ICON={
+ flame:'<svg class="i" viewBox="0 0 24 24"><path d="M12 2c.6 3.6 5.2 5.6 5.2 11a5.2 5.2 0 0 1-10.4 0c0-2 .9-3.4 2.1-4.4.1 1.9.9 2.9 2 3.2-.6-4 .2-6.4 1.1-9.8z"/></svg>',
+ bolt:'<svg class="i" viewBox="0 0 24 24"><path d="M13.5 2 5 13.5h6L10 22l9-12h-6z"/></svg>',
+ heart:'<svg class="i" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.7-9.5-9.4A5.3 5.3 0 0 1 12 6.3a5.3 5.3 0 0 1 9.5 5.3C19.5 16.3 12 21 12 21z"/></svg>',
+ lock:'<svg class="i" viewBox="0 0 24 24"><path d="M7 10V7a5 5 0 0 1 10 0v3h1.5a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 20.5v-9A1.5 1.5 0 0 1 5.5 10zm2.5 0h5V7a2.5 2.5 0 0 0-5 0z"/></svg>',
+ check:'<svg class="i s" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+ close:'<svg class="i s" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+ shield:'<svg class="i" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V5z"/></svg>',
+ crown:'<svg class="i" viewBox="0 0 24 24"><path d="M3 8l4.2 4L12 4.5 16.8 12 21 8l-1.800 11H4.800z"/></svg>',
+ star:'<svg class="i" viewBox="0 0 24 24"><path d="m12 2.500 2.900 6 6.600.8-4.800 4.600 1.200 6.500L12 17.200l-5.900 3.200 1.200-6.500L2.500 9.300l6.600-.8z"/></svg>'
+};
+let toastT=null;
+function toast(m){const t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2600);}
+function starsRow(n,big){let h=''; for(let i=0;i<3;i++) h+='<span class="'+(i<n?'':'off')+'">'+ICON.star+'</span>'; return '<div class="'+(big?'bigstars':'stars')+'" aria-label="'+n+' de 3 estrelas">'+h+'</div>';}
+
+/* ============ VISTAS ============ */
+let V={name:'home'}, L=null, BS=null, firstHome=true;
+
+function renderBar(){
+  const bar=$('bar');
+  if(V.name==='lesson'||V.name==='boss'){bar.style.display='none'; return;}
+  bar.style.display='';
+  bar.innerHTML='<div class="brand"><span class="mark"></span>Mesa de Estudo</div>'+
+   '<div class="chips"><span class="chip c-flame" title="Sequência de dias">'+ICON.flame+streakNow()+'</span><span class="chip c-xp" title="XP total">'+ICON.bolt+S.xp+'</span></div>';
+}
+
+function nodeCell(n,isNext){
+  const done=!!S.done[n.id];
+  const cls='node'+(n.kind==='test'?' test':'')+(n.kind==='boss'?' boss':'')+(done?' done':'')+(isNext?' next':'');
+  const icon=done?ICON.check:n.kind==='boss'?ICON.crown:n.kind==='test'?ICON.shield:String(n.num);
+  return '<div class="cell"><button class="'+cls+'" data-act="node" data-id="'+n.id+'" aria-label="'+esc((n.unit?'Tópico '+n.unit+': ':'')+n.label)+(done?' (concluída)':'')+'">'+icon+'</button>'+
+    '<span class="l">'+esc(n.label)+'</span>'+(n.kind!=='boss'&&done?starsRow(S.stars[n.id]||1):'')+'</div>';
+}
+
+function viewHome(){
+  const lv=lvl(), dx=dayXpNow(), C=2*Math.PI*42, off=C*(1-Math.min(1,dx/GOAL));
+  const due=dueIds().length;
+  const next=NODES.find(n=>!S.done[n.id]);
+  const nextId=next?next.id:null;
+  const total=ALLCARDS.length, mastered=masteredCount();
+  let units='';
+  UNITS.forEach(u=>{
+    const nodes=NODES.filter(n=>n.unit===u.n);
+    const cards=nodes.filter(n=>n.kind==='cards').flatMap(n=>n.items);
+    const m=cards.filter(c=>(S.cards[c.id]||{}).box>=MASTER).length;
+    const doneN=nodes.filter(n=>S.done[n.id]).length;
+    units+='<section class="unit"><div class="uhead"><span class="unum">'+u.n+'</span><div><h3>'+esc(u.title)+'</h3><p>'+esc(u.sub)+'</p></div></div>'+
+      '<div class="umeta"><span>'+doneN+'/'+nodes.length+' etapas</span><div class="xpbar" title="Cartas dominadas"><i style="width:'+(cards.length?Math.round(m/cards.length*100):0)+'%"></i></div><span>'+m+'/'+cards.length+' dominadas</span></div>'+
+      '<div class="grid">'+nodes.map(n=>nodeCell(n,n.id===nextId)).join('')+'</div></section>';
+  });
+  const boss=NODES.find(n=>n.kind==='boss');
+  const badges=BADGES.map(b=>'<div class="card badge '+(S.badges[b.id]?'on':'')+'"><div class="coin">'+(S.badges[b.id]?ICON.check:ICON.lock)+'</div><div><b>'+esc(b.name)+'</b><span>'+esc(b.desc)+'</span></div></div>').join('');
+  return '<section class="card hero"><div><p class="eyebrow">Nível '+(lv.i+1)+' · Direito Administrativo</p><h1>'+esc(lv.cur.name)+'</h1>'+
+    '<div class="xpbar"><i style="width:'+Math.round(lv.pct*100)+'%"></i></div>'+
+    '<p class="mono muted">'+S.xp+(lv.nxt?' / '+lv.nxt.min:'')+' XP · '+mastered+'/'+total+' cartas dominadas</p></div>'+
+    '<div class="ring"><svg viewBox="0 0 100 100"><circle class="tr" cx="50" cy="50" r="42" fill="none" stroke-width="10"/><circle class="fg" cx="50" cy="50" r="42" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg><div><b>'+Math.min(dx,GOAL)+'/'+GOAL+'</b><small>XP hoje</small></div></div></section>'+
+    '<section class="card review"><div><h3>Revisão do dia</h3><p>'+(due?due+(due===1?' item pronto':' itens prontos')+' para revisar.':'O que você errar ou estudar volta aqui no tempo certo.')+'</p></div>'+
+    '<div class="rbtns"><button class="btn small" data-act="review" '+(due?'':'disabled')+'>Revisar</button><button class="btn small ghost" data-act="free">Sorteio de 10</button></div></section>'+
+    units+
+    '<div class="sec"><h2>Chefão</h2><span class="mono muted">'+(S.done.boss?'concluído':'estudo de caso')+'</span></div>'+
+    '<div class="grid" style="grid-template-columns:1fr">'+nodeCell(boss,nextId==='boss')+'</div>'+
+    '<div class="sec"><h2>Conquistas</h2><span class="mono muted">'+BADGES.filter(b=>S.badges[b.id]).length+' de '+BADGES.length+'</span></div>'+
+    '<div class="badges">'+badges+'</div>'+
+    '<div class="foot"><p>As cartas e os desafios vêm dos seus 8 resumos de Direito Administrativo ('+total+' cartas). As cartas marcadas para verificar na fonte ficaram de fora. Todas as etapas estão liberadas: estude na ordem que preferir.</p>'+
+    (V.confirmReset?'<button class="btn small ghost" data-act="reset2">Confirmar: apagar todo o progresso</button>':'<button class="btn small ghost" data-act="reset">Zerar progresso</button>')+'</div>';
+}
+
+/* ----- lição ----- */
+function startLesson(items,mode,node){
+  L={mode,node,queue:items.map(q=>({q,retry:false})),total:items.length,cleared:0,hearts:3,wrong:0,firstOk:0,xp:0,cur:null,noHearts:items.every(q=>q.t==='card')};
+  loadItem(); V={name:'lesson'}; render(true);
+}
+function startNode(n){
+  if(n.kind==='boss'){BS={text:'',reveal:false,ticks:[]}; V={name:'boss'}; render(true); return;}
+  startLesson(n.kind==='test'?shuffle(n.items):n.items.slice(),'lesson',n);
+}
+function loadItem(){
+  const q=L.queue[0].q;
+  if(q.t==='match'){
+    const idx=q.pairs.map((_,i)=>i);
+    L.cur={cl:shuffle(idx),cr:shuffle(idx),doneL:[],doneR:[],selL:null,miss:false,flash:null,checked:false,ok:null};
+  } else if(q.t==='card'){
+    L.cur={shown:false,checked:false,ok:null};
+  } else {
+    const idx=q.o.map((_,i)=>i);
+    L.cur={order:q.t==='tf'?idx:shuffle(idx),sel:null,checked:false,ok:null};
+  }
+}
+function record(ok){
+  const c=L.cur, it=L.queue[0], card=it.q.t==='card';
+  c.checked=true; c.ok=ok;
+  if(ok){ L.xp+=card?(it.retry?3:6):(it.retry?5:10); if(!it.retry) L.firstOk++; }
+  else { if(!card) L.hearts--; L.wrong++; }
+  if(!it.retry) cardUpdate(it.q.id,ok);
+}
+function finishAnswer(ok){record(ok); render();}
+function rateCard(ok){record(ok); nextItem();}
+function nextItem(){
+  const it=L.queue.shift(), c=L.cur;
+  if(!c.ok&&!it.retry) L.queue.push({q:it.q,retry:true}); else L.cleared++;
+  if(L.hearts<=0&&!c.ok&&it.q.t!=='card'){V={name:'fail'}; persist(); render(true); return;}
+  if(!L.queue.length){completeLesson(); return;}
+  loadItem(); render();
+}
+function completeLesson(){
+  const bonus=L.wrong===0?15:0, gain=L.xp+bonus;
+  let stars=0;
+  if(L.node){
+    S.done[L.node.id]=true;
+    stars=L.wrong===0?3:L.wrong<=2?2:1;
+    S.stars[L.node.id]=Math.max(S.stars[L.node.id]||0,stars);
+    if(L.wrong===0) S.perfect=(S.perfect||0)+1;
+  }
+  addXp(gain);
+  const nb=checkBadges();
+  persist();
+  V={name:'done',gain,bonus,acc:Math.round(L.firstOk/L.total*100),hearts:L.hearts,noHearts:L.noHearts,stars,kind:L.node?L.node.kind:L.mode,nb};
+  render(true);
+}
+function viewLesson(){
+  const it=L.queue[0], Q=it.q, c=L.cur;
+  const kinds={mc:'Escolha a resposta correta',tf:'Certo ou errado?',match:'Ligue os pares',card:'Cartão de estudo'};
+  let body='';
+  if(Q.t==='card'){
+    body='<div class="flash"><h2 class="qtext">'+esc(Q.q)+'</h2></div>'+
+      (c.shown?'<div class="ans">'+esc(Q.a)+'</div>'+(Q.trap?'<div class="trap"><b>Armadilha da banca</b><p>'+esc(Q.trap)+'</p></div>':''):'<p class="hint">Tente responder de cabeça antes de ver a resposta.</p>');
+  } else if(Q.t==='match'){
+    const left=c.cl.map(k=>{const dn=c.doneL.includes(k); const fl=c.flash&&c.flash.l===k; return '<button class="tile '+(dn?'ok':c.selL===k?'sel':fl?'bad':'')+'" data-act="mL" data-i="'+k+'" '+(dn||c.checked?'disabled':'')+'>'+esc(Q.pairs[k][0])+'</button>';}).join('');
+    const right=c.cr.map(k=>{const dn=c.doneR.includes(k); const fl=c.flash&&c.flash.r===k; return '<button class="tile '+(dn?'ok':fl?'bad':'')+'" data-act="mR" data-i="'+k+'" '+(dn||c.checked?'disabled':'')+'>'+esc(Q.pairs[k][1])+'</button>';}).join('');
+    body='<h2 class="qtext">'+esc(Q.q)+'</h2><div class="pairs"><div class="col">'+left+'</div><div class="col">'+right+'</div></div>'+(c.checked?'':'<p class="hint">Toque em um termo e depois na definição correspondente.</p>');
+  } else {
+    body='<h2 class="qtext">'+esc(Q.q)+'</h2><div class="opts">'+c.order.map((oi,pos)=>{
+      let cls='';
+      if(c.checked) cls=oi===Q.a?'right':pos===c.sel?'wrong':'dim'; else if(pos===c.sel) cls='sel';
+      return '<button class="opt '+cls+'" data-act="sel" data-i="'+pos+'" '+(c.checked?'disabled':'')+'><kbd>'+(pos+1)+'</kbd><span>'+esc(Q.o[oi])+'</span></button>';
+    }).join('')+'</div>';
+  }
+  let dock;
+  if(Q.t==='card'){
+    dock='<div class="dock"><div class="dock-in">'+(c.shown?'<div class="dock-row"><button class="btn no" data-act="rate" data-v="0">Errei</button><button class="btn yes" data-act="rate" data-v="1">Acertei</button></div>':'<button class="btn" data-act="show">Mostrar resposta</button>')+'</div></div>';
+  } else if(c.checked){
+    const right=Q.t==='match'?'':'<p>Resposta: <b>'+esc(Q.o[Q.a])+'</b></p>';
+    dock='<div class="dock '+(c.ok?'ok':'bad')+'"><div class="dock-in"><div class="fb" aria-live="polite"><strong>'+(c.ok?(it.retry?'Agora sim!':'Correto!'):'Não foi dessa vez')+'</strong>'+(c.ok?'':right)+'<p>'+esc(Q.e)+'</p></div><button class="btn" data-act="next">Continuar</button></div></div>';
+  } else {
+    dock='<div class="dock"><div class="dock-in"><button class="btn" data-act="check" '+((Q.t==='match'||c.sel==null)?'disabled':'')+'>Verificar</button></div></div>';
+  }
+  const pct=Math.round(L.cleared/L.total*100);
+  return '<div class="lesson"><div class="ltop"><button class="x" data-act="exit" aria-label="Sair da lição">'+ICON.close+'</button><div class="progress" role="progressbar" aria-valuenow="'+pct+'" aria-valuemin="0" aria-valuemax="100"><i style="width:'+pct+'%"></i></div>'+(L.noHearts?'':'<span class="chip c-heart">'+ICON.heart+Math.max(L.hearts,0)+'</span>')+'</div>'+
+    '<p class="kind">'+kinds[Q.t]+(it.retry?' · segunda chance':'')+'</p>'+body+'</div>'+dock;
+}
+
+function viewDone(){
+  const d=V, titles={cards:'Cartas concluídas',test:'Desafio concluído',review:'Revisão concluída',free:'Treino concluído'};
+  const t=titles[d.kind]||'Etapa concluída';
+  return '<div class="center">'+(d.stars?starsRow(d.stars,true):'')+'<h1>'+t+'</h1>'+
+   '<div class="stats"><div class="stat"><b class="c-xp">+'+d.gain+'</b><span>XP</span></div><div class="stat"><b>'+d.acc+'%</b><span>Precisão</span></div><div class="stat"><b class="'+(d.noHearts?'':'c-heart')+'">'+(d.noHearts?'—':d.hearts)+'</b><span>Vidas</span></div></div>'+
+   (d.bonus?'<p class="muted">Inclui +'+d.bonus+' XP por não errar nenhuma.</p>':'')+
+   (d.nb&&d.nb.length?'<p><b>Conquista:</b> '+esc(d.nb.join(', '))+'</p>':'')+
+   '<button class="btn" data-act="home">Continuar</button></div>';
+}
+function viewFail(){
+  return '<div class="center"><h1>Acabaram as vidas</h1><p class="muted">Sem problema. O que você errou já entrou na revisão do dia. Releia as cartas do tópico e tente de novo.</p>'+
+   (L&&L.node?'<button class="btn" data-act="retry">Tentar de novo</button>':'')+'<button class="btn ghost" data-act="home">Voltar à trilha</button></div>';
+}
+
+/* ----- Chefão ----- */
+function viewBoss(){
+  const words=BS.text.trim()?BS.text.trim().split(/\s+/).length:0;
+  let h='<div class="ltop"><button class="x" data-act="exit" aria-label="Sair">'+ICON.close+'</button><div class="progress"><i style="width:'+(BS.reveal?100:40)+'%"></i></div></div><div class="lesson">'+
+   '<p class="kind">Chefão · estudo de caso</p><h2 class="qtext">'+esc(BOSS.title)+'</h2><p class="scene">'+esc(BOSS.prompt)+'</p>'+
+   '<h3 style="margin:22px 0 8px">Seu rascunho</h3><textarea id="draft" placeholder="Escreva como na prova: introdução curta, desenvolvimento por tópicos e conclusão.">'+esc(BS.text)+'</textarea><p class="wc" id="wc">'+words+' palavras · alvo: 180 a 300</p>';
+  if(!BS.reveal){
+    h+='<button class="btn" data-act="reveal">Comparar com os pontos esperados</button>';
+  } else {
+    h+='<h3>Marque o que o seu texto cobriu</h3><div class="chk">'+BOSS.pts.map((p,i)=>'<label><input type="checkbox" data-act="tick" data-i="'+i+'" '+(BS.ticks.includes(i)?'checked':'')+'><span>'+esc(p)+'</span></label>').join('')+'</div>'+
+     '<button class="btn" data-act="bossdone">Concluir ('+BS.ticks.length+' de '+BOSS.pts.length+')</button>';
+  }
+  return h+'</div>';
+}
+function bossDone(){
+  const n=BS.ticks.length, gain=n*15, pass=n>=4;
+  if(pass) S.done.boss=true;
+  S.bossBest=Math.max(S.bossBest,n);
+  addXp(gain); const nb=checkBadges(); persist();
+  V={name:'bossdone',n,gain,pass,nb}; render(true);
+}
+function viewBossDone(){
+  const d=V;
+  return '<div class="center"><p class="eyebrow">Chefão</p><h1>'+(d.pass?'Estudo de caso aprovado':'Quase lá')+'</h1>'+
+   '<div class="stats" style="grid-template-columns:repeat(2,1fr)"><div class="stat"><b>'+d.n+'/'+BOSS.pts.length+'</b><span>Pontos cobertos</span></div><div class="stat"><b class="c-xp">+'+d.gain+'</b><span>XP</span></div></div>'+
+   '<p class="muted">'+(d.pass?'Você cobriu o essencial. Na próxima, tente chegar aos 6 pontos.':'São necessários 4 pontos para concluir. Releia os pontos que faltaram e escreva de novo.')+'</p>'+
+   (d.nb&&d.nb.length?'<p><b>Conquista:</b> '+esc(d.nb.join(', '))+'</p>':'')+
+   '<button class="btn" data-act="home">Continuar</button></div>';
+}
+
+/* ============ RENDER E EVENTOS ============ */
+function render(top){
+  renderBar();
+  const map={home:viewHome,lesson:viewLesson,done:viewDone,fail:viewFail,boss:viewBoss,bossdone:viewBossDone};
+  $('view').innerHTML=map[V.name]();
+  if(top) window.scrollTo(0,0);
+  if(V.name==='home'&&firstHome){
+    firstHome=false;
+    if(Object.keys(S.done).length){const n=document.querySelector('.node.next'); if(n&&n.scrollIntoView) n.scrollIntoView({block:'center'});}
+  }
+}
+function goHome(){V={name:'home'}; L=null; BS=null; render(true);}
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]'); if(!b||b.disabled) return;
+  const a=b.dataset.act, i=b.dataset.i!==undefined?+b.dataset.i:null;
+  if(a==='tick') return;
+  switch(a){
+   case 'node': startNode(NODES.find(x=>x.id===b.dataset.id)); break;
+   case 'review':{
+     const ids=dueIds().sort((x,y)=>S.cards[x].due-S.cards[y].due).slice(0,10);
+     if(!ids.length){toast('Nada para revisar agora.'); break;}
+     startLesson(ids.map(id=>QMAP[id]),'review',null); break;}
+   case 'free':{
+     const pool=ALLCARDS.filter(q=>((S.cards[q.id]||{}).box||0)<MASTER);
+     startLesson(shuffle(pool.length>=10?pool:ALLCARDS).slice(0,10),'free',null); break;}
+   case 'sel': if(L&&!L.cur.checked){L.cur.sel=i; render();} break;
+   case 'check': if(L&&L.cur.sel!=null&&!L.cur.checked){finishAnswer(L.cur.order[L.cur.sel]===L.queue[0].q.a);} break;
+   case 'show': if(L){L.cur.shown=true; render(); const a=document.querySelector('.ans'); if(a&&a.scrollIntoView) a.scrollIntoView({block:'start',behavior:'smooth'}); window.scrollBy(0,-90);} break;
+   case 'rate': if(L&&L.cur.shown&&!L.cur.checked) rateCard(b.dataset.v==='1'); break;
+   case 'next': nextItem(); break;
+   case 'mL':{const c=L.cur; if(c.checked) break; c.flash=null; c.selL=(c.selL===i)?null:i; render(); break;}
+   case 'mR':{
+     const c=L.cur, Q=L.queue[0].q; if(c.checked||c.selL==null) break;
+     const li=c.selL;
+     if(li===i){c.doneL.push(li); c.doneR.push(i); c.selL=null; c.flash=null; if(c.doneL.length===Q.pairs.length){finishAnswer(!c.miss); break;}}
+     else {c.miss=true; c.flash={l:li,r:i}; c.selL=null;}
+     render(); break;}
+   case 'exit': case 'home': goHome(); break;
+   case 'retry': if(L&&L.node) startNode(L.node); break;
+   case 'reveal': BS.reveal=true; render(); break;
+   case 'bossdone': bossDone(); break;
+   case 'reset': V.confirmReset=true; render(); break;
+   case 'reset2': S=defState(); persist(); V={name:'home'}; render(true); toast('Progresso zerado.'); break;
+  }
+});
+document.addEventListener('change',e=>{
+  const t=e.target; if(t.dataset&&t.dataset.act==='tick'){
+    const i=+t.dataset.i, k=BS.ticks.indexOf(i);
+    if(t.checked&&k<0) BS.ticks.push(i);
+    if(!t.checked&&k>=0) BS.ticks.splice(k,1);
+    const btn=document.querySelector('[data-act="bossdone"]'); if(btn) btn.textContent='Concluir ('+BS.ticks.length+' de '+BOSS.pts.length+')';
+  }
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='draft'&&BS){BS.text=e.target.value; const w=BS.text.trim()?BS.text.trim().split(/\s+/).length:0; $('wc').textContent=w+' palavras · alvo: 180 a 300';}
+});
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='TEXTAREA'||V.name!=='lesson'||!L) return;
+  const c=L.cur, Q=L.queue[0].q;
+  if(Q.t==='card'){
+    if(!c.shown&&(e.key==='Enter'||e.key===' ')){e.preventDefault(); c.shown=true; render();}
+    else if(c.shown&&!c.checked&&(e.key==='1'||e.key==='2')) rateCard(e.key==='2');
+  } else {
+    if(/^[1-4]$/.test(e.key)&&!c.checked&&Q.t!=='match'&&+e.key<=Q.o.length){c.sel=+e.key-1; render();}
+    else if(e.key==='Enter'){ if(c.checked) nextItem(); else if(c.sel!=null&&Q.t!=='match') finishAnswer(c.order[c.sel]===Q.a); }
+  }
+});
+
+render(true);
+initDb();
+})();
+</script>
+
+</body>
+</html>
